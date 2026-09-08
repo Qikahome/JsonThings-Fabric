@@ -18,11 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.ModLoadingStage;
-import net.minecraftforge.fml.ModLoadingWarning;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -73,7 +70,7 @@ public abstract class ThingParser<TBuilder extends BaseBuilder<?, TBuilder>> ext
 
     static
     {
-        registerCondition(new ResourceLocation("mod_loaded"), (type, id, data) -> ModList.get().isLoaded(data.get("modid").getAsString()));
+        registerCondition(new ResourceLocation("mod_loaded"), (type, id, data) -> FabricLoader.getInstance().isModLoaded(data.get("modid").getAsString()));
         registerCondition(new ResourceLocation("not"), (type, id, data) -> !parseAndTestCondition(type, id, data.get("condition").getAsJsonObject()));
         registerCondition(new ResourceLocation("any"), (type, id, data) -> {
             var conditions = data.get("conditions").getAsJsonArray();
@@ -126,10 +123,7 @@ public abstract class ThingParser<TBuilder extends BaseBuilder<?, TBuilder>> ext
         var message = "Error parsing " + thingType + " with id '" + key + "': " + e.getMessage();
         LOGGER.error(message);
         LOGGER.debug("Details for message above", e);
-        var modContainer = ModList.get().getModContainerById(key.getNamespace());
-        if (modContainer.isEmpty())
-            modContainer = ModList.get().getModContainerById("jsonthings");
-        ModLoader.get().addWarning(new ModLoadingWarning(modContainer.orElseThrow().getModInfo(), ModLoadingStage.ERROR, "Json Things: " + message));
+        // Forge 用 ModLoadingWarning 收集为 mod 加载错误（非致命），Fabric 无对应机制，此处仅记录并跳过该条目。
     }
 
     protected static Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

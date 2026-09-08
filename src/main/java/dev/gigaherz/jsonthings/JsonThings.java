@@ -6,39 +6,35 @@ import dev.gigaherz.jsonthings.things.client.BlockColorHandler;
 import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import dev.gigaherz.jsonthings.things.parsers.*;
 import dev.gigaherz.jsonthings.things.scripting.ScriptParser;
+import io.github.fabricators_of_create.porting_lib.transfer.fluid.item.FluidBucketWrapper;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.client.NamedRenderTypeManager;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.data.loading.DatagenModLoader;
-import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.resource.ResourcePackLoader;
+import net.minecraft.world.item.Item;
 import org.slf4j.Logger;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-@Mod.EventBusSubscriber(modid = JsonThings.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-@Mod(JsonThings.MODID)
-public class JsonThings
+/**
+ * JsonThings Fabric 入口（main + client 双入口）。
+ *
+ * <p>对应上游 Forge 版 {@code JsonThings} 类。Fabric 无 mod 事件总线，各阶段的映射：
+ * <ul>
+ *   <li>构造器 + FMLConstructModEvent → {@link #onInitialize()}：创建 parser、注册 things pack 源、同步加载 thingpacks；</li>
+ *   <li>NewRegistryEvent(finishLoading) → onInitialize 内按序调用 parser 的 finishLoading/registerValues；</li>
+ *   <li>AddPackFindersEvent(SERVER_DATA) → Fabric 无 world datapack 注入通道（数据包内容暂不注入世界）；</li>
+ *   <li>ClientHandlers(FMLClientSetupEvent/颜色/渲染层) → {@link #onInitializeClient()} + CLIENT_STARTED。</li>
+ * </ul>
+ */
+public class JsonThings implements ModInitializer, ClientModInitializer
 {
     public static final String MODID = "jsonthings";
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -58,144 +54,169 @@ public class JsonThings
     public static SoundEventParser soundEventParser;
     public static SoundTypeParser soundTypeParser;
 
-    public JsonThings()
+    @Override
+    public void onInitialize()
     {
-        var bus = FMLJavaModLoadingContext.get().getModEventBus();
+        ThingRegistries.initRegistries();
 
         var manager = ThingResourceManager.instance();
-        if (ModList.get().isLoaded("rhino"))
+
+        if (rhinoPresent())
         {
             ScriptParser.enable(manager);
         }
-        blockParser = manager.registerParser(new BlockParser(bus));
-        itemParser = manager.registerParser(new ItemParser(bus));
-        fluidParser = manager.registerParser(new FluidParser(bus));
-        enchantmentParser = manager.registerParser(new EnchantmentParser(bus));
+
+        blockParser = manager.registerParser(new BlockParser());
+        itemParser = manager.registerParser(new ItemParser());
+        fluidParser = manager.registerParser(new FluidParser());
+        enchantmentParser = manager.registerParser(new EnchantmentParser());
         foodParser = manager.registerParser(new FoodParser());
         shapeParser = manager.registerParser(new ShapeParser());
         tierParser = manager.registerParser(new TierParser());
-        fluidTypeParser = manager.registerParser(new FluidTypeParser(bus));
+        fluidTypeParser = manager.registerParser(new FluidTypeParser());
         armorMaterialParser = manager.registerParser(new ArmorMaterialParser());
-        creativeModeTabParser = manager.registerParser(new CreativeModeTabParser(bus));
+        creativeModeTabParser = manager.registerParser(new CreativeModeTabParser());
         mobEffectInstanceParser = manager.registerParser(new MobEffectInstanceParser());
         blockSetTypeParser = manager.registerParser(new BlockSetTypeParser());
-        soundEventParser = manager.registerParser(new SoundEventParser(bus));
+        soundEventParser = manager.registerParser(new SoundEventParser());
         soundTypeParser = manager.registerParser(new SoundTypeParser());
+
+        // 各 mod 内嵌的 things/ 目录也作为 thingpack 源。
+        manager.addPackFinder(ModResourcesFinder.buildPackFinder());
+
+        // 同步加载并解析 thingpacks（对应 Forge 的 enqueueWork + NewRegistryEvent waitForLoading）。
+        var loaderFuture = manager.beginLoading();
+        manager.waitForLoading(loaderFuture);
+
+        // 先在自定义/vanilla 注册表登记"类型级"条目（sound_type/item_tier/armor_material/blockset 等），
+        // 再按依赖顺序把各 parser 构建的 Thing 注册进 vanilla 注册表。
+        manager.finishLoading();
+
+        soundEventParser.registerValues();
+        fluidTypeParser.registerValues();
+        enchantmentParser.registerValues();
+        // 流体先注册（液体方块/桶在构造时按注册表解析流体），再注册方块，最后注册物品。
+        fluidParser.registerValues();
+        blockParser.registerValues();
+        itemParser.registerValues();
+        creativeModeTabParser.registerValues();
+
+        registerBucketStorages();
     }
 
-    private static CompletableFuture<ThingResourceManager> loaderFuture;
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void construct(FMLConstructModEvent event)
+    /**
+     * 把 thingpack 生成的流体桶暴露为 Fabric transfer 流体容器（{@code FluidStorage.ITEM}），
+     * 这样 PL 的 fluid_container 桶模型能读到桶内流体以显示填充纹理，管道/泵也能抽取。
+     */
+    private static void registerBucketStorages()
     {
-        event.enqueueWork(() -> {
-            ThingRegistries.initRegistries();
-
-            ThingResourceManager instance = ThingResourceManager.instance();
-
-            ResourcePackLoader.loadResourcePacks(instance.getRepository(), ModResourcesFinder::buildPackFinder);
-
-            loaderFuture = instance.beginLoading();
+        if (fluidParser == null)
+            return;
+        fluidParser.getBuilders().forEach(fb -> {
+            var bucketBuilder = fb.getBucketBuilder();
+            if (bucketBuilder == null)
+                return;
+            Item bucket = bucketBuilder.get().self();
+            FluidStorage.combinedItemApiProvider(bucket).register(context -> new FluidBucketWrapper(context));
         });
     }
 
-    @SubscribeEvent
-    public static void packFinder(AddPackFindersEvent event)
+    @Override
+    public void onInitializeClient()
     {
-        if (event.getPackType() == PackType.SERVER_DATA)
+        // 流体渲染 handler 由 FabricatedForgeFluid 的 FluidRenderHandlerRegistrar 自动注册
+        // （遍历流体注册表，对所有 FabricatedFluidType 调用 initializeClient）。
+
+        // 注册流体桶模型 loader（jsonthings:fluid_bucket）
+        io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback.EVENT.register(loaders ->
+                loaders.put(new ResourceLocation("jsonthings", "fluid_bucket"),
+                        dev.gigaherz.jsonthings.things.client.JsonThingsFluidBucketModel.Loader.INSTANCE));
+
+        BlockColorHandler.init();
+        ItemColorHandler.init();
+
+        ClientLifecycleEvents.CLIENT_STARTED.register(JsonThings::afterClientStart);
+    }
+
+    private static void afterClientStart(Minecraft client)
+    {
+        try
         {
-            event.addRepositorySource(ThingResourceManager.instance().getWrappedPackFinder());
+            registerBlockRenderLayers();
+            registerBlockColors();
+            registerItemColors(client.getBlockColors());
+        }
+        catch (Throwable e)
+        {
+            LOGGER.error("Error during JsonThings client setup", e);
         }
     }
 
-    @SubscribeEvent
-    public static void finishLoading(NewRegistryEvent event)
+    private static void registerBlockRenderLayers()
     {
-        ThingResourceManager.instance().waitForLoading(loaderFuture);
-        loaderFuture = null;
+        final ResourceLocation solid = new ResourceLocation("solid");
+        blockParser.getBuilders().forEach(thing -> {
+            if (thing.isInErrorState()) return;
+            ResourceLocation layer = thing.getDefaultRenderLayer();
+            if (!layer.equals(solid))
+            {
+                BlockRenderLayerMap.INSTANCE.putBlock(thing.get().self(), renderTypeByLayer(layer));
+            }
+        });
     }
 
-    @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = JsonThings.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ClientHandlers
+    private static void registerBlockColors()
     {
-        private static void addClientPackFinder()
+        blockParser.getBuilders().forEach(thing -> {
+            String handlerName = thing.getColorHandler();
+            if (handlerName != null)
+            {
+                var bc = BlockColorHandler.get(handlerName);
+                ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> bc.getColor(state, world, pos, tintIndex), thing.get().self());
+            }
+        });
+    }
+
+    private static void registerItemColors(BlockColors blockColors)
+    {
+        itemParser.getBuilders().forEach(thing -> {
+            if (thing.isInErrorState()) return;
+            String handlerName = thing.getColorHandler();
+            if (handlerName != null)
+            {
+                Function<BlockColors, ItemColor> handler = ItemColorHandler.get(handlerName);
+                ItemColor ic = handler.apply(blockColors);
+                ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ic.getColor(stack, tintIndex), thing.get().self());
+            }
+        });
+    }
+
+    private static RenderType renderTypeByLayer(ResourceLocation layer)
+    {
+        return switch (layer.getPath())
         {
-            Minecraft.getInstance().getResourcePackRepository().addPackFinder(ThingResourceManager.instance().getWrappedPackFinder());
+            case "cutout_mipped" -> RenderType.cutoutMipped();
+            case "cutout" -> RenderType.cutout();
+            case "translucent" -> RenderType.translucent();
+            case "tripwire" -> RenderType.tripwire();
+            default -> RenderType.solid();
+        };
+    }
+
+    private static boolean rhinoPresent()
+    {
+        // 对应 Forge 的 ModList#isLoaded("rhino")：rhino 以独立 mod 安装（其初始化负责安装 ContextFactory/ClassShutter）。
+        // Fabric 上优先看 loader（dev/生产 mods 目录均适用），退回类探测兼容仅放 classpath 的情形。
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("rhino"))
+            return true;
+        try
+        {
+            Class.forName("dev.latvian.mods.rhino.Rhino", false, JsonThings.class.getClassLoader());
+            return true;
         }
-
-        @SubscribeEvent
-        public static void constructMod(FMLConstructModEvent event)
+        catch (ClassNotFoundException e)
         {
-            if (DatagenModLoader.isRunningDataGen()) return;
-
-            event.enqueueWork(() -> {
-                ClientHandlers.addClientPackFinder();
-                BlockColorHandler.init();
-                ItemColorHandler.init();
-            });
-
-            ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, returnTo) -> {
-                var thingPackManager = ThingResourceManager.instance();
-                return new PackSelectionScreen(thingPackManager.getRepository(),
-                        rpl -> {
-                            Minecraft.getInstance().setScreen(returnTo);
-                            thingPackManager.onConfigScreenSave();
-                        }, thingPackManager.getThingPacksLocation(),
-                        Component.literal("Thing Packs"));
-            }));
-        }
-
-        @SubscribeEvent
-        public static void clientSetup(FMLClientSetupEvent event)
-        {
-            final ResourceLocation solid = new ResourceLocation("solid");
-            JsonThings.blockParser.getBuilders().forEach(thing -> {
-                if (thing.isInErrorState()) return;
-                ResourceLocation layer = thing.getDefaultRenderLayer();
-                if (!layer.equals(solid))
-                {
-                    ItemBlockRenderTypes.setRenderLayer(thing.get().self(), NamedRenderTypeManager.get(layer).block());
-                }
-            });
-            JsonThings.fluidParser.getBuilders().forEach(thing -> {
-                if (thing.isInErrorState()) return;
-                ResourceLocation layer = thing.getDefaultRenderLayer();
-                for (var fluid : thing.getAllSiblings())
-                {
-                    if (!layer.equals(solid))
-                    {
-                        ItemBlockRenderTypes.setRenderLayer(fluid, NamedRenderTypeManager.get(layer).block());
-                    }
-                }
-            });
-        }
-
-        @SubscribeEvent
-        public static void itemColorHandlers(RegisterColorHandlersEvent.Block event)
-        {
-            JsonThings.blockParser.getBuilders().forEach(thing -> {
-                String handlerName = thing.getColorHandler();
-                if (handlerName != null)
-                {
-                    BlockColor bc = BlockColorHandler.get(handlerName);
-                    event.register(bc, thing.get().self());
-                }
-            });
-        }
-
-        @SubscribeEvent
-        public static void itemColorHandlers(RegisterColorHandlersEvent.Item event)
-        {
-            JsonThings.itemParser.getBuilders().forEach(thing -> {
-                if (thing.isInErrorState()) return;
-                String handlerName = thing.getColorHandler();
-                if (handlerName != null)
-                {
-                    Function<BlockColors, ItemColor> handler = ItemColorHandler.get(handlerName);
-                    ItemColor ic = handler.apply(event.getBlockColors());
-                    event.register(ic, thing.get().self());
-                }
-            });
+            return false;
         }
     }
 }

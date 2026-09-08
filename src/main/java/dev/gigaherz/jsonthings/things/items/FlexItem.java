@@ -29,7 +29,8 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ToolAction;
+import io.github.fabricators_of_create.porting_lib.tool.ToolAction;
+import io.github.fabricators_of_create.porting_lib.tool.addons.ToolActionItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class FlexItem extends Item implements IEventRunner
+public class FlexItem extends Item implements IEventRunner, ToolActionItem
 {
     public FlexItem(Properties properties, ItemBuilder builder)
     {
@@ -68,7 +69,7 @@ public class FlexItem extends Item implements IEventRunner
         for (EquipmentSlot slot1 : EquipmentSlot.values())
         {
             attributeModifiers.computeIfAbsent(slot1, key -> ArrayListMultimap.create())
-                    .putAll(super.getAttributeModifiers(slot1, ItemStack.EMPTY));
+                    .putAll(super.getDefaultAttributeModifiers(slot1));
         }
     }
 
@@ -181,7 +182,7 @@ public class FlexItem extends Item implements IEventRunner
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot)
     {
         return Utils.orElseGet(attributeModifiers.get(slot), HashMultimap::create);
     }
@@ -190,13 +191,7 @@ public class FlexItem extends Item implements IEventRunner
     public boolean canPerformAction(ItemStack stack, ToolAction toolAction)
     {
         if (toolActions != null) return toolActions.contains(toolAction);
-        return super.canPerformAction(stack, toolAction);
-    }
-
-    @Override
-    public int getBurnTime(ItemStack itemStack, @org.jetbrains.annotations.Nullable RecipeType<?> recipeType)
-    {
-        return burnTime;
+        return false;
     }
 
     //endregion

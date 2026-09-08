@@ -1,13 +1,17 @@
 package dev.gigaherz.jsonthings.things.serializers;
 
 import com.google.gson.JsonObject;
+import dev.gigaherz.jsonthings.JsonThings;
 import dev.gigaherz.jsonthings.things.IFlexBlock;
 import dev.gigaherz.jsonthings.things.ThingRegistries;
 import dev.gigaherz.jsonthings.things.blocks.*;
+import dev.gigaherz.jsonthings.things.builders.BlockBuilder;
 import dev.gigaherz.jsonthings.things.misc.FlexTreeGrower;
 import dev.gigaherz.jsonthings.util.Utils;
 import dev.gigaherz.jsonthings.util.parse.JParse;
+import io.github.fabricators_of_create.porting_lib.common.util.Lazy;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -20,13 +24,12 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import dev.gigaherz.jsonthings.util.RegistryObject;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class FlexBlockType<T extends Block & IFlexBlock>
 {
@@ -165,21 +168,20 @@ public class FlexBlockType<T extends Block & IFlexBlock>
 
         return (props, builder) -> {
 
-            var parentName = parent.getValue();
-
-            if (parentName == null)
-            {
-                var parentBuilder = builder.getParent();
+            Supplier<BlockState> baseStateSupplier = () -> {
+                BlockBuilder parentBuilder = null;
+                if (parent.getValue() != null)
+                    parentBuilder = JsonThings.blockParser.getBuildersMap().get(parent.getValue());
+                if (parentBuilder == null)
+                    parentBuilder = builder.getParent();
                 if (parentBuilder == null)
                     throw new IllegalStateException("Stairs blocks need a parent block, but none has been declared.");
-                parentName = parentBuilder.getRegistryName();
-            }
-
-            var parentBlock = RegistryObject.create(parentName, ForgeRegistries.BLOCKS);
+                return parentBuilder.get().self().defaultBlockState();
+            };
 
             List<Property<?>> _properties = builder.getProperties();
             Map<Property<?>, Comparable<?>> propertyDefaultValues = builder.getPropertyDefaultValues();
-            return new FlexStairsBlock(props, propertyDefaultValues, () -> parentBlock.get().defaultBlockState())
+            return new FlexStairsBlock(props, propertyDefaultValues, baseStateSupplier)
             {
                 @Override
                 protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder1)
@@ -305,7 +307,7 @@ public class FlexBlockType<T extends Block & IFlexBlock>
             Map<Property<?>, Comparable<?>> propertyDefaultValues = builder.getPropertyDefaultValues();
             var fluidName = fluid.getValue() != null ? fluid.getValue() : builder.getRegistryName();
             var fluidSupplier = Lazy.<FlowingFluid>of(() -> {
-                var fluidObj = Utils.getOrCrash(ForgeRegistries.FLUIDS, fluidName);
+                var fluidObj = Utils.getOrCrash(BuiltInRegistries.FLUID, fluidName);
                 if (!(fluidObj instanceof FlowingFluid flowing))
                     throw new RuntimeException("LiquidBlock requires a flowing fluid");
                 return flowing;

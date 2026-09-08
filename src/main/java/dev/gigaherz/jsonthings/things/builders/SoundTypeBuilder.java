@@ -2,11 +2,10 @@ package dev.gigaherz.jsonthings.things.builders;
 
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraftforge.common.util.ForgeSoundType;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public class SoundTypeBuilder extends BaseBuilder<SoundType, SoundTypeBuilder>
 {
@@ -67,11 +66,19 @@ public class SoundTypeBuilder extends BaseBuilder<SoundType, SoundTypeBuilder>
     @Override
     protected SoundType buildInternal()
     {
-        RegistryObject<SoundEvent> breakSoundEvent = RegistryObject.create(breakSound, ForgeRegistries.SOUND_EVENTS);
-        RegistryObject<SoundEvent> stepSoundEvent = RegistryObject.create(stepSound, ForgeRegistries.SOUND_EVENTS);
-        RegistryObject<SoundEvent> placeSoundEvent = RegistryObject.create(placeSound, ForgeRegistries.SOUND_EVENTS);
-        RegistryObject<SoundEvent> hitSoundEvent = RegistryObject.create(hitSound, ForgeRegistries.SOUND_EVENTS);
-        RegistryObject<SoundEvent> fallSoundEvent = RegistryObject.create(fallSound, ForgeRegistries.SOUND_EVENTS);
-        return new ForgeSoundType(volume, pitch, breakSoundEvent, stepSoundEvent, placeSoundEvent, hitSoundEvent, fallSoundEvent);
+        // Forge 版用 ForgeSoundType(Supplier) 延迟解析；Fabric 的 vanilla SoundType 要求实体 SoundEvent，
+        // 依赖注册顺序（SoundEvent 先于 SoundType 注册）直接解析。
+        return new SoundType(volume, pitch,
+                resolve(breakSound, SoundEvents.STONE_BREAK),
+                resolve(stepSound, SoundEvents.STONE_STEP),
+                resolve(placeSound != null ? placeSound : breakSound, SoundEvents.STONE_PLACE),
+                resolve(hitSound, SoundEvents.STONE_HIT),
+                resolve(fallSound, SoundEvents.STONE_FALL));
+    }
+
+    private SoundEvent resolve(ResourceLocation id, SoundEvent fallback)
+    {
+        SoundEvent event = BuiltInRegistries.SOUND_EVENT.get(id);
+        return event != null ? event : fallback;
     }
 }

@@ -3,6 +3,7 @@ package dev.gigaherz.jsonthings.things.fluids;
 import com.google.common.collect.Maps;
 import dev.gigaherz.jsonthings.things.IFlexFluid;
 import dev.gigaherz.jsonthings.things.events.FlexEventHandler;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.fluids.FluidType;
 
 import java.util.Map;
 import java.util.function.Supplier;

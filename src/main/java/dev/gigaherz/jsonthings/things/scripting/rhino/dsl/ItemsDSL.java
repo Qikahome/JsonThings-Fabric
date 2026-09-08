@@ -5,7 +5,7 @@ import dev.latvian.mods.rhino.Scriptable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class ItemsDSL
 {
@@ -22,13 +22,13 @@ public class ItemsDSL
 
     private static Object findItem(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
-        var item = DSLHelpers.find(ForgeRegistries.ITEMS, (String) args[0]);
+        var item = DSLHelpers.find(BuiltInRegistries.ITEM, (String) args[0]);
         return DSLHelpers.wrap(cx, scope, item, Item.class);
     }
 
     private static Object makeItemStack(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
-        var item = DSLHelpers.getRegistryEntry(args[0], ForgeRegistries.ITEMS);
+        var item = DSLHelpers.getRegistryEntry(args[0], BuiltInRegistries.ITEM);
 
         var stack = new ItemStack(item);
         if (args.length >= 2)

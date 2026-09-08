@@ -5,10 +5,9 @@ import dev.gigaherz.jsonthings.things.builders.BaseBuilder;
 import dev.gigaherz.jsonthings.things.builders.FluidTypeBuilder;
 import dev.gigaherz.jsonthings.util.parse.JParse;
 import dev.gigaherz.jsonthings.util.parse.function.ObjValueFunction;
+import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,21 +17,19 @@ public class FluidTypeParser extends ThingParser<FluidTypeBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public FluidTypeParser(IEventBus bus)
+    public FluidTypeParser()
     {
         super(GSON, "fluid_type");
-
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(ForgeRegistries.Keys.FLUID_TYPES, helper -> {
-            LOGGER.info("Started registering FluidType things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack FluidTypes.");
-        });
+        LOGGER.info("Started registering FluidType things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(), thing -> {
+            // 视觉数据封装在 FluidType 内（ExtendedFluidType.initializeClient），渲染由 FabricatedForgeFluid 自动注册
+            Registry.register(PortingLibFluids.FLUID_TYPES, thing.getRegistryName(), thing.get());
+        }, BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack FluidTypes.");
     }
 
     @Override
@@ -68,6 +65,8 @@ public class FluidTypeParser extends ThingParser<FluidTypeBuilder>
                 .ifKey("can_hydrate", val -> val.bool().handle(builder::setCanHydrate))
                 .ifKey("can_convert_to_source", val -> val.bool().handle(builder::setCanConvertToSource))
                 .ifKey("supports_boating", val -> val.bool().handle(builder::setSupportsBoating))
+                // 实体交互桥接 tag（可选）：默认取 fluid_type 注册名；数据包需让流体挂上该 tag 才有实体交互
+                .ifKey("tag", val -> val.string().map(ResourceLocation::new).handle(builder::setTag))
                 //.ifKey pathType(@org.jetbrains.annotations.Nullable BlockPathTypes pathType)
                 //.ifKey adjacentPathType(@org.jetbrains.annotations.Nullable BlockPathTypes adjacentPathType)
                 //.ifKey canHydrate(boolean canHydrate)

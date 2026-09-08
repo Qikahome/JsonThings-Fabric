@@ -15,10 +15,10 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.TierSortingRegistry;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import dev.gigaherz.jsonthings.util.RegistryObject;
+import io.github.fabricators_of_create.porting_lib.common.util.Lazy;
+import io.github.fabricators_of_create.porting_lib.util.TierSortingRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,7 @@ public class FlexItemType<T extends Item>
         boolean useBlockName = GsonHelper.getAsBoolean(data, "use_block_name", true);
         return (props, builder) -> {
             ResourceLocation blockName = name != null ? new ResourceLocation(name) : builder.getRegistryName();
-            return new FlexBlockItem(RegistryObject.create(blockName, ForgeRegistries.BLOCKS), useBlockName, props, builder);
+            return new FlexBlockItem(RegistryObject.create(blockName, BuiltInRegistries.BLOCK), useBlockName, props, builder);
         };
     });
 
@@ -48,7 +48,7 @@ public class FlexItemType<T extends Item>
                 .ifKey("base_item", val -> val.string().map(ResourceLocation::new).handle(baseItemName::setValue));
         return (props, builder) -> {
             Supplier<Item> baseItem = baseItemName.getValue() != null
-                    ? RegistryObject.create(baseItemName.getValue(), ForgeRegistries.ITEMS)
+                    ? RegistryObject.create(baseItemName.getValue(), BuiltInRegistries.ITEM)
                     : () -> Items.GLASS_BOTTLE;
             return new FlexDrinkableBottleItem(baseItem, props, builder);
         };
@@ -70,7 +70,7 @@ public class FlexItemType<T extends Item>
                 if (path.endsWith("_bucket")) path = path.substring(0, path.length() - "_bucket".length());
                 fluidName = new ResourceLocation(thisName.getNamespace(), path);
             }
-            return new FlexBucketItem(Lazy.of(() -> Utils.getOrCrash(ForgeRegistries.FLUIDS, fluidName)), props, builder);
+            return new FlexBucketItem(Lazy.of(() -> Utils.getOrCrash(BuiltInRegistries.FLUID, fluidName)), props, builder);
         };
     });
 

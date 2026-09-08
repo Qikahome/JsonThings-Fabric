@@ -1,74 +1,61 @@
 /*
- * Based on net.minecraftforge.client.loading.ClientModLoader.java
- * Copyright (c) Forge Development LLC and contributors
- * SPDX-License-Identifier: LGPL-2.1-only
+ * JsonThings (Fabric) — 从各 mod 的 jar 中寻找 things/ 目录并包装为资源包源。
+ * 对应上游 Forge 版 ModResourcesFinder；Forge 的 IModFile/PathPackResources/
+ * ModLoaderWarning 机制在 Fabric 下由 ModContainer.findPath + 日志替代。
  */
 package dev.gigaherz.jsonthings;
 
 import com.mojang.logging.LogUtils;
 import dev.gigaherz.jsonthings.util.CustomPackType;
-import net.minecraft.SharedConstants;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.RepositorySource;
-import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.ModLoadingStage;
-import net.minecraftforge.fml.ModLoadingWarning;
-import net.minecraftforge.forgespi.language.IModInfo;
-import net.minecraftforge.forgespi.locating.IModFile;
-import net.minecraftforge.resource.DelegatingPackResources;
-import net.minecraftforge.resource.PathPackResources;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 class ModResourcesFinder
 {
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    static RepositorySource buildPackFinder(Map<IModFile, ? extends PathPackResources> modResourcePacks)
+    /** 生成一个 RepositorySource：扫描所有加载的 mod，将根目录含 things/ 的 jar 注册为 thingpack。 */
+    static RepositorySource buildPackFinder()
     {
-        return (packList) -> serverPackFinder(modResourcePacks, packList);
-    }
+        return (Consumer<Pack> packList) -> {
+            for (ModContainer container : FabricLoader.getInstance().getAllMods())
+            {
+                String modId = container.getMetadata().getId();
+                if (modId.equals("minecraft") || modId.equals("fabric"))
+                    continue;
 
-    private static void serverPackFinder(Map<IModFile, ? extends PathPackResources> modResourcePacks, Consumer<Pack> consumer)
-    {
-        List<PathPackResources> hiddenPacks = new ArrayList<>();
-        for (Map.Entry<IModFile, ? extends PathPackResources> e : modResourcePacks.entrySet())
-        {
-            IModInfo mod = e.getKey().getModInfos().get(0);
-            if (Objects.equals(mod.getModId(), "minecraft")) continue; // skip the minecraft "mod"
-            final String name = "mod:" + mod.getModId();
-            final Pack pack = Pack.readMetaAndCreate(name, Component.literal(e.getValue().packId()), false, id -> e.getValue(), CustomPackType.THINGS, Pack.Position.BOTTOM, PackSource.DEFAULT);
-            if (pack == null)
-            {
-                // Vanilla only logs an error, instead of propagating, so handle null and warn that something went wrong
-                ModLoader.get().addWarning(new ModLoadingWarning(mod, ModLoadingStage.ERROR, "fml.modloading.brokenresources", e.getKey()));
-                continue;
+                container.findPath("things").ifPresent(path -> {
+                    // 与 Forge 对齐：以整个 mod 为 pack 根（mcmeta 取 jar 根），things/ 仅作为包内目录，
+                    // 因此不要求 things/ 目录内自带 pack.mcmeta。
+                    final java.util.List<java.nio.file.Path> roots = container.getRootPaths();
+                    if (roots.isEmpty())
+                        return;
+                    final String name = "mod:" + modId;
+                    final Pack pack = Pack.readMetaAndCreate(
+                            name,
+                            Component.literal(name),
+                            false,
+                            id -> new PathPackResources(id, roots.get(0), false),
+                            CustomPackType.THINGS,
+                            Pack.Position.BOTTOM,
+                            PackSource.DEFAULT);
+                    if (pack == null)
+                    {
+                        LOGGER.warn("Mod '{}' has a things/ folder but no valid pack.mcmeta; it will not be loaded as a thingpack.", modId);
+                        return;
+                    }
+                    LOGGER.debug("Registering thingpack {} from mod {}", name, modId);
+                    packList.accept(pack);
+                });
             }
-            LOGGER.debug("Generating PackInfo named {} for mod file {}", name, e.getKey().getFilePath());
-            if (mod.getOwningFile().showAsResourcePack())
-            {
-                consumer.accept(pack);
-            }
-            else
-            {
-                hiddenPacks.add(e.getValue());
-            }
-        }
-
-        // Create a resource pack merging all mod resources that should be hidden
-        final Pack modResourcesPack = Pack.readMetaAndCreate("mod_resources", Component.literal("Mod Resources"), true,
-                id -> new DelegatingPackResources(id, false, new PackMetadataSection(Component.translatable("fml.resources.modresources", hiddenPacks.size()),
-                        SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES)), hiddenPacks),
-                PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.DEFAULT);
-        consumer.accept(modResourcesPack);
+        };
     }
 }

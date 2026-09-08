@@ -4,10 +4,9 @@ import com.google.gson.JsonObject;
 import dev.gigaherz.jsonthings.things.builders.BaseBuilder;
 import dev.gigaherz.jsonthings.things.builders.SoundEventBuilder;
 import dev.gigaherz.jsonthings.util.parse.JParse;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,20 +16,18 @@ public class SoundEventParser extends ThingParser<SoundEventBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public SoundEventParser(IEventBus bus)
+    public SoundEventParser()
     {
         super(GSON, "sound_event");
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(ForgeRegistries.Keys.SOUND_EVENTS, helper -> {
-            LOGGER.info("Started registering SoundEvent things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack SoundEvents.");
-        });
+        LOGGER.info("Started registering SoundEvent things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> Registry.register(BuiltInRegistries.SOUND_EVENT, thing.getRegistryName(), thing.get()),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack SoundEvents.");
     }
 
 

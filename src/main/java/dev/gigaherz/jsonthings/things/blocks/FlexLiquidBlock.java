@@ -28,7 +28,7 @@ public class FlexLiquidBlock extends LiquidBlock implements IFlexBlock
 {
     public FlexLiquidBlock(Properties properties, Map<Property<?>, Comparable<?>> propertyDefaultValues, Supplier<FlowingFluid> fluidSupplier)
     {
-        super(fluidSupplier, properties);
+        super(fluidSupplier.get(), properties);
         initializeFlex(propertyDefaultValues);
     }
 

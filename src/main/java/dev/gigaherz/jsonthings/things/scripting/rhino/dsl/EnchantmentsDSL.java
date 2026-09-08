@@ -5,7 +5,7 @@ import dev.latvian.mods.rhino.NativeJavaObject;
 import dev.latvian.mods.rhino.Scriptable;
 import dev.latvian.mods.rhino.ScriptableObject;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class EnchantmentsDSL
 {
@@ -23,7 +23,7 @@ public class EnchantmentsDSL
     {
         return new NativeJavaObject(
                 ScriptableObject.getTopLevelScope(scope),
-                DSLHelpers.find(ForgeRegistries.ENCHANTMENTS, (String) args[0]),
+                DSLHelpers.find(BuiltInRegistries.ENCHANTMENT, (String) args[0]),
                 Item.class,
                 cx);
     }

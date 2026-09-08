@@ -166,23 +166,11 @@ public class FlexEnchantment extends Enchantment implements IEventRunner
     }
 
     @Override
-    public boolean isAllowedOnBooks()
-    {
-        return isAllowedOnBooks;
-    }
-
-    @Override
     public boolean canEnchant(ItemStack stack)
     {
         if (itemCompatibility != null && !itemCompatibility.matches(stack))
             return false;
         return super.canEnchant(stack);
-    }
-
-    @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack)
-    {
-        return super.canApplyAtEnchantingTable(stack);
     }
 
     @Override

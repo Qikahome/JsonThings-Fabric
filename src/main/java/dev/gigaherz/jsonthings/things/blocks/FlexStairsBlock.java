@@ -27,7 +27,7 @@ public class FlexStairsBlock extends StairBlock implements IFlexBlock
 {
     public FlexStairsBlock(Properties properties, Map<Property<?>, Comparable<?>> propertyDefaultValues, Supplier<BlockState> parentBlockStateSupplier)
     {
-        super(parentBlockStateSupplier, properties);
+        super(parentBlockStateSupplier.get(), properties);
         initializeFlex(propertyDefaultValues);
     }
 

@@ -1,16 +1,16 @@
 package dev.gigaherz.jsonthings.things.builders;
 
+import dev.gigaherz.jsonthings.things.misc.FlexTier;
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeTier;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TierBuilder extends BaseBuilder<ForgeTier, TierBuilder>
+public class TierBuilder extends BaseBuilder<FlexTier, TierBuilder>
 {
     public static TierBuilder begin(ThingParser<TierBuilder> ownerParser, ResourceLocation registryName)
     {
@@ -84,9 +84,9 @@ public class TierBuilder extends BaseBuilder<ForgeTier, TierBuilder>
     }
 
     @Override
-    protected ForgeTier buildInternal()
+    protected FlexTier buildInternal()
     {
-        return new ForgeTier(level, uses, speed, attackDamageBonus, enchantmentValue, tag, repairIngredient);
+        return new FlexTier(level, uses, speed, attackDamageBonus, enchantmentValue, tag, repairIngredient);
     }
 
     public List<Object> getSortAfter()

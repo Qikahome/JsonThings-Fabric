@@ -2,13 +2,13 @@ package dev.gigaherz.jsonthings.things;
 
 import dev.gigaherz.jsonthings.things.builders.ItemBuilder;
 import dev.gigaherz.jsonthings.things.serializers.ItemVariantProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
@@ -43,7 +43,7 @@ public class StackContext implements ItemVariantProvider
         {
             if (this.item != null)
             {
-                theItem = ForgeRegistries.ITEMS.getValue(this.item);
+                theItem = BuiltInRegistries.ITEM.get(this.item);
                 if (theItem == null)
                     throw new RuntimeException(String.format("The item '%s' is not registered.", this.item));
             }

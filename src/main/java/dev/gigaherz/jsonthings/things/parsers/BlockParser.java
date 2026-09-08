@@ -19,8 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.RegisterEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,20 +33,18 @@ public class BlockParser extends ThingParser<BlockBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public BlockParser(IEventBus bus)
+    public BlockParser()
     {
         super(GSON, "block");
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.BLOCK, helper -> {
-            LOGGER.info("Started registering Block things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get().self()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Blocks.");
-        });
+        LOGGER.info("Started registering Block things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> Registry.register(BuiltInRegistries.BLOCK, thing.getRegistryName(), thing.get().self()),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Blocks.");
     }
 
     @Override
@@ -62,7 +60,7 @@ public class BlockParser extends ThingParser<BlockBuilder>
                 .ifKey("type", val -> val.string().map(ResourceLocation::new).handle(builder::setBlockType))
                 .ifKey("map_color", val -> val
                         .ifString(str -> str.handle(name -> builder.setMaterialColor(MapColors.get(name))))
-                        .ifInteger(num -> num.range(0, 64).handle(index -> builder.setMaterialColor(MapColor.MATERIAL_COLORS[index])))
+                        .ifInteger(num -> num.range(0, 64).handle(index -> builder.setMaterialColor(MapColor.byId(index))))
                         .typeError()
                 )
                 .ifKey("requires_tool_for_drops", val -> val.bool().handle(builder::setRequiresToolForDrops))

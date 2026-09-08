@@ -19,9 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.UseAnim;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.RegisterEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,27 +35,31 @@ public class ItemParser extends ThingParser<ItemBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public ItemParser(IEventBus bus)
+    public ItemParser()
     {
         super(GSON, "item");
-
-        bus.addListener(this::register);
-        bus.addListener(this::addToTabs);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.ITEM, helper -> {
-            LOGGER.info("Started registering Item things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get().self()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Items.");
-        });
+        LOGGER.info("Started registering Item things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> {
+                    var item = thing.get().self();
+                    Registry.register(BuiltInRegistries.ITEM, thing.getRegistryName(), item);
+                    var burnDuration = thing.getBurnDuration();
+                    if (burnDuration != null && burnDuration > 0)
+                    {
+                        FuelRegistry.INSTANCE.add(item, burnDuration);
+                    }
+                },
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Items.");
     }
 
-    public void addToTabs(BuildCreativeModeTabContentsEvent event)
-    {
-        getBuilders().forEach(thing -> thing.provideVariants(event.getTabKey(), event, event.getParameters(), thing, false));
-    }
+    // TODO(Fabric): 创作标签注入。原 addToTabs(BuildCreativeModeTabContentsEvent) 需改为在注册完成后，
+    //  针对每个 ItemBuilder 声明的 tab(RL) 用 fabric-item-group-api 的 ItemGroupEvents.modifyEntriesEvent 挂载，
+    //  需先读透 ItemBuilder/CreativeModeTabBuilder 的 variant provider 关系再实现。
 
     @Override
     public ItemBuilder processThing(ResourceLocation key, JsonObject data, Consumer<ItemBuilder> builderModification)

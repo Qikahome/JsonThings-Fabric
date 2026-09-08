@@ -33,8 +33,11 @@ public class FlexHorizontalDirectionalBlock extends HorizontalDirectionalBlock i
 
     //region special handling for FlexDirectionalBlock
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+    public BlockState getStateForPlacement(BlockPlaceContext context)
+    {
+        // 水平朝向方块只取玩家水平朝向；上游 getNearestLookingDirection() 在朝上/下时朝向错误/崩溃
+        // （JsonMore Forge 侧对该 bug 用 mixin 修复，本仓库自持代码直接在此修正）。
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
     //endregion
 

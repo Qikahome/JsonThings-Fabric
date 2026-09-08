@@ -5,6 +5,9 @@ import dev.gigaherz.jsonthings.things.IFlexFluid;
 import dev.gigaherz.jsonthings.things.events.FlexEventContext;
 import dev.gigaherz.jsonthings.things.events.FlexEventHandler;
 import dev.gigaherz.jsonthings.things.events.FlexEventResult;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.fluids.extensions.FluidExtension;
+import io.github.fabricators_of_create.porting_lib.fluids.sound.SoundActions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
@@ -25,8 +28,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.common.SoundActions;
-import net.minecraftforge.fluids.FluidType;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -225,7 +226,7 @@ public class FlexFlowingFluid extends FlowingFluid implements IFlexFluid
 
     //endregion
 
-    public static class Flowing extends FlowingFluid
+    public static class Flowing extends FlowingFluid implements FluidExtension
     {
         private final FlexFlowingFluid parent;
 

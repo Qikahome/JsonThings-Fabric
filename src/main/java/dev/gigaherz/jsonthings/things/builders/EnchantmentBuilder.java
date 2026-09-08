@@ -4,12 +4,11 @@ import com.google.common.collect.Lists;
 import dev.gigaherz.jsonthings.things.misc.FlexEnchantment;
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -130,8 +129,11 @@ public class EnchantmentBuilder extends BaseBuilder<FlexEnchantment, Enchantment
         flexEnchantment.setDiscoverable(isDiscoverable);
         flexEnchantment.setAllowedOnBooks(isAllowedOnBooks);
         flexEnchantment.setBlackList(blackList.stream().map(loc -> {
-            var ro = RegistryObject.create(loc, ForgeRegistries.ENCHANTMENTS);
-            return (Predicate<Enchantment>) ((enchantment) -> ro.filter(en -> en == enchantment).isPresent());
+            // 延迟到判定时再解析，保证同批互相引用的附魔在注册完成后仍能命中
+            return (Predicate<Enchantment>) (en) -> {
+                Enchantment target = BuiltInRegistries.ENCHANTMENT.get(loc);
+                return target != null && target == en;
+            };
         }).toList());
 
         constructEventHandlers(flexEnchantment);

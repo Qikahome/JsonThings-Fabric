@@ -28,9 +28,9 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.UseAnim;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.util.NonNullSupplier;
-import net.minecraftforge.registries.ForgeRegistries;
+import io.github.fabricators_of_create.porting_lib.tool.ToolAction;
+import io.github.fabricators_of_create.porting_lib.common.util.NonNullSupplier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -427,6 +427,17 @@ public class ItemBuilder extends BaseBuilder<IFlexItem, ItemBuilder> implements 
         return getValue(burnDuration, ItemBuilder::getBurnDuration);
     }
 
+    @Nullable
+    public ResourceKey<CreativeModeTab> getGroup()
+    {
+        return getValue(group, ItemBuilder::getGroup);
+    }
+
+    public Set<ResourceKey<CreativeModeTab>> getCreativeMenuTabs()
+    {
+        return creativeMenuStacks.keySet();
+    }
+
     public Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> getAttributeModifiers()
     {
         var mods = getAttributeModifiersRaw();
@@ -439,7 +450,7 @@ public class ItemBuilder extends BaseBuilder<IFlexItem, ItemBuilder> implements 
             var map = modifiers.computeIfAbsent(kv.getKey(), slot -> ArrayListMultimap.create());
             for (var kv1 : kv.getValue().entries())
             {
-                var attr = Utils.getOrCrash(ForgeRegistries.ATTRIBUTES, kv1.getKey());
+                var attr = Utils.getOrCrash(BuiltInRegistries.ATTRIBUTE, kv1.getKey());
                 map.put(attr, kv1.getValue());
             }
         }

@@ -73,7 +73,7 @@ public class FoodBuilder extends BaseBuilder<FoodProperties, FoodBuilder>
         if (fast) foodBuilder.fast();
         if (alwaysEat) foodBuilder.alwaysEat();
         effects.forEach(pair -> {
-            foodBuilder.effect(pair.getFirst()::get, pair.getSecond());
+            foodBuilder.effect(pair.getFirst().get(), pair.getSecond());
         });
         return foodBuilder.build();
     }

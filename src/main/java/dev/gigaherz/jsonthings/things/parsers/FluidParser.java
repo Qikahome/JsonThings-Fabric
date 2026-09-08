@@ -11,13 +11,13 @@ import dev.gigaherz.jsonthings.things.serializers.FlexItemType;
 import dev.gigaherz.jsonthings.util.parse.JParse;
 import dev.gigaherz.jsonthings.util.parse.value.Any;
 import dev.gigaherz.jsonthings.util.parse.value.ObjValue;
+import dev.gigaherz.jsonthings.util.RegistryObject;
+import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,23 +30,18 @@ public class FluidParser extends ThingParser<FluidBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public FluidParser(IEventBus bus)
+    public FluidParser()
     {
         super(GSON, "fluid");
-
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.FLUID, helper -> {
-            LOGGER.info("Started registering Fluid things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing ->
-                            thing.register(helper::register),
-                    BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Fluids.");
-        });
+        LOGGER.info("Started registering Fluid things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> thing.register((name, fluid) -> Registry.register(BuiltInRegistries.FLUID, name, fluid)),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Fluids.");
     }
 
     @Override
@@ -89,7 +84,7 @@ public class FluidParser extends ThingParser<FluidBuilder>
     {
         val
                 .ifString(v -> v.map(ResourceLocation::new).handle(rl -> {
-                    builder.setAttributesType(RegistryObject.create(rl, ForgeRegistries.FLUID_TYPES.get()));
+                    builder.setAttributesType(RegistryObject.create(rl, PortingLibFluids.FLUID_TYPES));
                 }))
                 .ifObj(obj -> obj.raw((JsonObject item) -> {
                     createFluidType(builder, item);

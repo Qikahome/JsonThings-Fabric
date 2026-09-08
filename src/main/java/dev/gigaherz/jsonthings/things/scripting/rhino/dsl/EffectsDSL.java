@@ -5,7 +5,7 @@ import dev.latvian.mods.rhino.Scriptable;
 import dev.latvian.mods.rhino.ScriptableObject;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class EffectsDSL
 {
@@ -22,13 +22,13 @@ public class EffectsDSL
 
     private static Object findEffect(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
-        var effect = DSLHelpers.find(ForgeRegistries.MOB_EFFECTS, (String) args[0]);
+        var effect = DSLHelpers.find(BuiltInRegistries.MOB_EFFECT, (String) args[0]);
         return DSLHelpers.wrap(cx, ScriptableObject.getTopLevelScope(scope), effect, MobEffect.class);
     }
 
     private static Object makeEffectInstance(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
-        var effect = DSLHelpers.getRegistryEntry(args[0], ForgeRegistries.MOB_EFFECTS);
+        var effect = DSLHelpers.getRegistryEntry(args[0], BuiltInRegistries.MOB_EFFECT);
         var duration = DSLHelpers.getInt(args[1]);
         var amplifier = 0;
         var ambient = false;

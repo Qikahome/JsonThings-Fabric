@@ -1,23 +1,60 @@
+// JsonThings → Fabric (1.20.1) 单工程骨架
+// 参考 Create (mc1.20.1/fabric/dev) 与 AutoSizedGUI fabric 模块：loom 1.10.+ 钉版 + Porting Lib 整包 include。
 plugins {
-    id 'idea'
+    id 'fabric-loom' version '1.10.+'
     id 'maven-publish'
-    id 'net.neoforged.moddev.legacyforge' version '2.0.78'
 }
 
-version = "0.9.13"
-group= "dev.gigaherz.jsonthings"
+group = project.property('group')
+version = project.property('mod_version')
 
 base {
-    archivesName = "JsonThings-1.20.1"
+    archivesName = 'JsonThings-1.20.1-fabric'
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
 
 repositories {
     maven {
-        url 'https://repo.spongepowered.org/repository/maven-public/'
+        // hanbings 第三方代理：镜像 fabricmc/mavenCentral 等，缓解国外源过慢（若失效可移除）
+        url project.findProperty('loom_libraries_base') ?: 'https://repository.hanbings.io/proxy/'
+    }
+    maven {
+        url 'https://maven.aliyun.com/repository/public'
         content {
-            includeGroup "org.spongepowered"
+            includeGroupByRegex '.*'
+        }
+    }
+    mavenCentral()
+    maven {
+        // Minecraft 运行库（text2speech 等 Mojang 专属，仅发布于官方库）
+        url "https://libraries.minecraft.net/"
+    }
+    maven {
+        url "https://maven.fabricmc.net/"
+    }
+    maven {
+        // Porting Lib 发布仓库
+        url "https://mvn.devos.one/releases"
+        content {
+            includeGroup "io.github.fabricators_of_create.Porting-Lib"
+        }
+    }
+    maven {
+        // Porting Lib 模块的传递依赖（attributes → reach-entity-attributes）
+        url "https://maven.jamieswhiteshirt.com/libs-release"
+        content {
+            includeGroup "com.jamieswhiteshirt"
+        }
+    }
+    // parchment 数据（与上游 Forge 侧一致的 1.20.1-2023.09.03）
+    maven {
+        url "https://maven.parchmentmc.org"
+        content {
+            includeGroupByRegex 'org\\.parchmentmc.*'
         }
     }
     maven {
@@ -26,140 +63,107 @@ repositories {
             includeGroup "curse.maven"
         }
     }
-
-    flatDir {
-        dirs project.rootProject.file("./debugmods")
-    }
-}
-
-legacyForge {
-    version = "1.20.1-47.3.33"
-
-    mixin {
-        add sourceSets.main, "jsonthings.refmap.json"
-        config "jsonthings.mixins.json"
-    }
-
-    runs {
-        // applies to all the run configs below
-        configureEach {
-            gameDirectory = project.file('run')
-            logLevel = org.slf4j.event.Level.DEBUG
-        }
-
-        client {
-            client()
-        }
-
-        server {
-            server()
+    maven {
+        // Rhino Fabric 版官方发布（同 LatvianModder，与 KubeJS 1.20.1/fabric 同一依赖）
+        url "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
         }
     }
-
-    mods {
-        thismod {
-            sourceSet(sourceSets.main)
+    maven {
+        // FabricatedForgeFluid（本项目的流体库，GitHub Packages）
+        url "https://maven.pkg.github.com/Qikahome/FabricatedForgeFluid"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GH_PACKAGES_TOKEN") ?: System.getenv("GITHUB_TOKEN")
         }
-    }
-
-    parchment {
-        minecraftVersion = "1.20.1"
-        mappingsVersion = "2023.09.03"
     }
 }
 
 dependencies {
+    minecraft "com.mojang:minecraft:${project.property('minecraft_version')}"
+    // 与上游 Forge 侧同为 mojmap + parchment 命名，源码可直接编译
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment "org.parchmentmc.data:parchment-${project.property('parchment_minecraft_version')}:${project.property('parchment_mappings_version')}@zip"
+    }
+    modImplementation "net.fabricmc:fabric-loader:${project.property('fabric_loader_version')}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.property('fabric_api_version')}"
+
+    // Porting Lib 整包（compile+runtime 依赖；不再 include —— FabricatedForgeFluid 已 jar-in-jar 内嵌 PL，
+    // 避免重复加载同版本 PL 冲突）
+    def portingLibVersion = project.property('porting_lib_version')
+    def portingLibModules = [
+            'accessors', 'asm', 'attributes', 'base', 'blocks', 'brewing', 'chunk_loading',
+            'client_events', 'common', 'config', 'core', 'data', 'entity', 'extensions',
+            'fluids', 'gametest', 'gui_utils', 'items', 'lazy_registration', 'level_events',
+            'loot', 'mixin_extensions', 'model_builders', 'model_generators', 'model_loader',
+            'model_materials', 'models', 'networking', 'obj_loader', 'recipe_book_categories',
+            'registries', 'tags', 'tool_actions', 'transfer', 'utility'
+    ]
+    portingLibModules.each { mod ->
+        modImplementation("io.github.fabricators_of_create.Porting-Lib:${mod}:${portingLibVersion}")
+    }
+
+    // FabricatedForgeFluid 流体库（jar-in-jar 内嵌，自带 PL 与流体实体交互/渲染注册）
+    modImplementation(include("qikahome:FabricatedForgeFluid-1.20.1:1.0.0"))
+
     compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-    //library 'com.google.guava:guava:21.0'
-    //runtimeOnly fg.deobf("useless:Botania:1.18.2.433")
-    //runtimeOnly fg.deobf("useless:curios-forge-1.18.2:5.0.7.0")
-    //runtimeOnly fg.deobf("useless:Patchouli:1.18.2.69")
-
-    modImplementation "curse.maven:rhino-416294:4085695"
-
-    /*library 'org.graalvm.regex:regex:22.0.0.2'
-    library 'org.graalvm.sdk:graal-sdk:22.0.0.2'
-    library 'org.graalvm.truffle:truffle-api:22.0.0.2'
-    library 'org.graalvm.js:js:22.0.0.2'
-    library 'org.graalvm.js:js-scriptengine:22.0.0.2'*/
-
-    annotationProcessor 'org.spongepowered:mixin:0.8.+:processor'
+    // rhino 脚本引擎：上游 Forge 依赖 rhino mod（LatvianModder，modid=rhino）。这里引官方 Fabric 版
+    // （1.20.1/fabric+quilt，2001.2.3-build.10），modImplementation 进 dev 运行时并走 loader 初始化。
+    modImplementation 'maven.modrinth:rhino:2001.2.3-build.10+fabric'
 }
 
-java {
-    withSourcesJar()
-}
+loom {
+    // AT → AW 迁移占位（内容见 jsonthings.accesswidener，按需启用）
+    accessWidenerPath = file("src/main/resources/jsonthings.accesswidener")
+    mixin {
+        // 固定 refmap 名，不随 archivesName 变化；需与 jsonthings.mixins.json 的 "refmap" 一致
+        defaultRefmapName = "jsonthings.refmap.json"
+    }
 
-tasks.named("jar") {
-
-    from(files('LICENSE.txt'))
-
-    manifest {
-        attributes([
-                "Specification-Title": "jsonthings",
-                "Specification-Vendor": "gigaherz",
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": project.version,
-                "Implementation-Vendor" :"gigaherz",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs": "jsonthings.mixins.json"
-        ])
+    runs {
+        configureEach {
+            runDir = 'run'
+        }
+        client {
+            client()
+        }
+        server {
+            server()
+        }
     }
 }
 
-tasks.withType(GenerateModuleMetadata) {
-    enabled = false
-}
-
-project.afterEvaluate {
-    publish.dependsOn('build')
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId project.archivesBaseName
-                from components.java
-
-                pom.withXml {
-                    asNode().dependencies.dependency.each { dep ->
-                        if (dep.version.last().value().last().contains("mapped")) {
-                            assert dep.parent().remove(dep)
-                        }
-                    }
-                }
-            }
-        }
-
-        repositories {
-            if (findProperty("RELEASE") && System.env.giga_maven_host != null) {
-                System.out.println("Remote publish enabled on " + System.env.giga_maven_host)
-                maven {
-                    url System.env.giga_maven_host
-                    credentials {
-                        username System.env.giga_maven_user
-                        password System.env.giga_maven_password
-                    }
-                }
-            }
-            else {
-                System.out.println("Remote publish disabled.")
-                maven {
-                    url "$projectDir/../CommonMaven"
-                }
-            }
-        }
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.encoding = 'UTF-8'
 }
 
-// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
+publishing {
+    publications {
+        mavenFabric(MavenPublication) {
+            artifactId = 'JsonThings-1.20.1-fabric'
+            from components.java
+        }
     }
+    // TODO(发布)：目标仓库未定（Qikahome GitHub Packages 或独立），先注释
+    // repositories {
+    //     maven {
+    //         name = "GitHubPackages"
+    //         url = "https://maven.pkg.github.com/Qikahome/JsonThings"
+    //         credentials {
+    //             username = System.getenv("GITHUB_ACTOR")
+    //             password = System.getenv("GITHUB_TOKEN")
+    //         }
+    //     }
+    // }
 }

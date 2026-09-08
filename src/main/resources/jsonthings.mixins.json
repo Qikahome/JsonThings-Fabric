@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_16",
   "refmap": "jsonthings.refmap.json",
   "mixins": [
-    "ResourcePackTypeExtender"
+    "ResourcePackTypeExtender",
+    "MixinModResourcePackCreator"
   ],
   "client": [],
   "server": [],

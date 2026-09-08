@@ -10,8 +10,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,20 +50,12 @@ public class Utils
 
     public static Item getItemOrCrash(ResourceLocation which)
     {
-        return getOrCrash(ForgeRegistries.ITEMS, which);
+        return getOrCrash(BuiltInRegistries.ITEM, which);
     }
 
     public static Block getBlockOrCrash(ResourceLocation which)
     {
-        return getOrCrash(ForgeRegistries.BLOCKS, which);
-    }
-
-    public static <T> T getOrCrash(IForgeRegistry<T> reg, ResourceLocation name)
-    {
-        if (!reg.containsKey(name))
-            throw new KeyNotFoundException("Could not find an entry with name " + name + " in registry " + reg.getRegistryName());
-        //noinspection ConstantConditions
-        return reg.getValue(name);
+        return getOrCrash(BuiltInRegistries.BLOCK, which);
     }
 
     public static <T> T getOrCrash(Registry<T> registry, ResourceLocation name)
@@ -73,14 +64,6 @@ public class Utils
         if (t == null)
             throw new KeyNotFoundException("No object with name " + name + " found in the registry " + registry);
         return t;
-    }
-
-    public static <T> T getOrElse(IForgeRegistry<T> reg, ResourceLocation name, T fallback)
-    {
-        if (!reg.containsKey(name))
-            return fallback;
-        //noinspection ConstantConditions
-        return reg.getValue(name);
     }
 
     public static <T> T getOrElse(Registry<T> registry, ResourceLocation name, T fallback)

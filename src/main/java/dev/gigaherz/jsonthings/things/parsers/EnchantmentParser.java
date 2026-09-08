@@ -10,10 +10,10 @@ import dev.gigaherz.jsonthings.util.parse.value.ArrayValue;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.RegisterEvent;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,20 +27,18 @@ public class EnchantmentParser extends ThingParser<EnchantmentBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public EnchantmentParser(IEventBus bus)
+    public EnchantmentParser()
     {
         super(GSON, "enchantment");
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.ENCHANTMENT, helper -> {
-            LOGGER.info("Started registering Enchantment things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Enchantments.");
-        });
+        LOGGER.info("Started registering Enchantment things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> Registry.register(BuiltInRegistries.ENCHANTMENT, thing.getRegistryName(), thing.get()),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Enchantments.");
     }
 
     @Override
