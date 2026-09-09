@@ -1,15 +1,15 @@
-# Item Tiers
+# 物品等级（Item Tier）
 
-Item tiers define the material tiers for tools. 
+物品等级定义工具的材质等级。
 
-Named item tiers go in the `item_tier` directory in the thing pack.
+具名的物品等级定义放在 thing 包的 `item_tier` 目录中。
 
-E.g.
+例如：
 ```
 /things/examplepack/item_tier/clay.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -17,7 +17,7 @@ E.g.
   "speed": 1.0,
   "attack_damage_bonus": 1,
   "enchantment_value": 1,
-  "tag": "forge:requires_gold_tool",
+  "tag": "minecraft:needs_iron_tool",
   "repair_ingredient": {
     "item": "string"
   },
@@ -26,64 +26,63 @@ E.g.
 }
 ```
 
-
 ## "uses"
 
-Defines how many uses (without Unbreaking) the item has before breaking.
+定义该工具（不计耐久附魔）损坏前可使用的次数。
 
-Required.
+必填。
 
-Must be a positive integer bigger than zero.
+必须是大于零的正整数。
 
 ## "speed"
 
-Defines how much cooldown the tool has after attacking.
+定义该工具的开采速度。
 
-Required.
+必填。
 
-Must be a positive number bigger than zero. Decimals are allowed.
+必须是大于等于 1 的数字。允许小数。
 
 ## "attack_damage_bonus"
 
-Defines how much attack bonus this tool has when used to attack enemies.
+定义该工具攻击敌人时附加的攻击伤害加成。
 
-Required.
+必填。
 
-Must be a positive number or zero. Decimals are allowed.
+必须是大于等于 1 的数字。允许小数。
 
 ## "enchantment_value"
 
-Defines how enchantable the tool is. Higher values will allow more enchantments to be placed at the same time.
+定义该工具的附魔能力。值越高，能同时附上的魔咒越好。
 
-Required.
+必填。
 
-Must be a positive integer or zero.
+必须是大于等于 1 的整数。
 
 ## "tag"
 
-Defines the set of blocks this tool can break faster than an empty hand.
+定义该工具等级能够正确开采（产生掉落物）的方块 tag。用于表示"需要该等级工具"的方块集合，例如原版中的 `minecraft:needs_iron_tool`。
 
-Required.
+必填。
 
-Must be a resource location string like `"requires_stone_tool"`, or `"minecraft:requires_gold_tool"`. Like on model jsons and 
-other vanilla files, if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"needs_iron_tool"`，或 `"minecraft:needs_iron_tool"`。与模型 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "repair_ingredient"
 
-Defines an ingredient to be used for repairing this tool tier. 
+定义用于修复该工具等级的原料。
 
-Required.
+必填。
 
-Must be a json objects (`{}`) as defined in the [Ingredient definitions](./Ingredient.md).
+必须是 JSON 对象（`{}`），定义方式见 [原料定义](./Ingredient.md)。
 
-## "sort_before" and "sort_after"
+## "sort_before" 与 "sort_after"
 
-Define the ordering of this tier in relation to others.
+定义该等级相对于其他等级的排序。
 
-Sort After: Defines the tiers that are considered lower than this tier and must appear first on the list. This tier goes after them.
+Sort After：定义被视为低于本等级的等级，它们必须排在列表前面；本等级排在它们之后。
 
-Sort Before: Defines the tiers that are considered higher than this tier and must appear later on the list. This tier goes before them.
+Sort Before：定义被视为高于本等级的等级，它们必须排在列表后面；本等级排在它们之前。
 
-Optional. Default: no dependencies.
+可选。默认：无依赖。
 
-Must be a json array (`[]`) containing strings.
+必须是包含字符串的 JSON 数组（`[]`）。

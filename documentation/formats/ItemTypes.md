@@ -1,72 +1,73 @@
-# Item Types
+# 物品类型（Item Type）
 
-Items come in many types. Some common items require special handling such as special superclasses to be used in code.
+物品有多种类型。一些常见物品需要特殊处理，例如在代码中使用特殊的超类。
 
-To support those special items, there's a number of item types that can be specified in the json.
+为了支持这些特殊物品，JSON 中可以指定多种物品类型。
 
-More types will be added in the future as needed.
+未来可以根据需要添加更多类型。
 
 ## "plain"
 
-Plain is the default item type. It has no special parameters
+普通（plain）是默认的物品类型。没有特殊参数。
 
 ## "block"
 
-Block items are items that represent and place a block. They are normally used via the block json's `"item"` key, but can be defined separately.
+方块物品是代表并放置一个方块的物品。它们通常通过方块 JSON 的 `"item"` 键来使用，但也可以单独定义。
 
-Parameters:
-* `"places"`: The block registry name for the block that will be placed by this item.
-  * Optional. Default: a block with the same name as the item.
+参数：
+* `"places"`：该物品将放置的方块注册名。
+  * 可选。默认：与物品同名的方块。
+* `"use_block_name"`：是否使用方块名作为物品名。
+  * 可选。默认：true。
 
 ## "food_bowl"
 
-Makes the item behave as a food bowl and return an empty bowl when eating.
+使物品表现为碗装食物，食用后返还空碗。
 
 ## "drinkable_bottle"
 
-Similar to "food_bowl", this item allows defining foods that come in bottles and other containers.
+与 "food_bowl" 类似，该类型允许定义装在瓶子及其他容器中的食物。
 
-Parameters:
-* `"base_item"`: The item that will be returned when eating.
-  * Optional. Default: an empty glass bottle.
+参数：
+* `"base_item"`：食用（饮用）后返还的物品。
+  * 可选。默认：空玻璃瓶。
 
 ## "bucket"
 
-Makes the item into a bucket, with some contained fluid.
+使物品成为装有某种流体的桶。
 
-Parameters:
-* `"fluid"`: The registry name of the fluid.
-  * Required.
+参数：
+* `"fluid"`：流体的注册名。
+  * 可选。省略时根据物品注册名推断：去掉 `_bucket` 后缀后即为流体名，例如 `foo_bucket` 对应 `foo`。
 
-## "armor" 
+## "armor"
 
-Armor items are equippable in the armor slots of the player and other entities. Armor items need special textures based on the armor material.
+盔甲物品可装备在玩家及其他实体的盔甲槽中。盔甲物品需要基于护甲材料的特殊贴图。
 
-Parameters:
-* `"equipment_slot"`: A string representing an equipment slot. One of: `"head"`, `"chest"`, `"legs"`, or `"feet"`.
-  * Required.
-* `"material"`: The name of an armor material.
+参数：
+* `"equipment_slot"` 或 `"armor_type"`：表示盔甲部位的字符串。取值为 `"head"`、`"chest"`、`"legs"`、`"feet"` 之一。
+  * 必填（二者必居其一）。
+* `"material"`：护甲材料的名称。
 
-## "sword", "shovel", "axe", "pickaxe", "hoe"
+## "sword"、"shovel"、"axe"、"pickaxe"、"hoe"
 
-Tool items are good for digging things, and some also have advantages when used to attack.
+工具物品适合挖掘，其中一些在攻击时也有优势。
 
-They all share a common set of parameters:
-* `"tier"`: The name of an item tier.
-* `"damage"`: A number added on top of the tier's base damage, used to adjust it. Can be negative.
-* `"speed"`: A number added on top of the tier's base speed, used to adjust it. Can be negative.
+它们共享一组参数：
+* `"tier"`：物品等级的名称。
+* `"damage"`：在等级基础伤害之上追加的数字，用于调整伤害。可以为负。
+* `"speed"`：在等级基础速度之上追加的数字，用于调整速度。可以为负。
 
 ## "digger"
 
-Used to define a custom tool type.
+用于定义自定义工具类型。
 
-This item type has the same parameters as the tools above, and one additional:
-* `"mineable"`: A resource location of a block tag containing the list of blocks this tool is able to mine faster than an empty hand. If the block has the "requires_tool_for_drops" flag set, an empty hand or a tool that doesn't have the block in its tag would not be able to get loot.
+该物品类型与上面工具的参数相同，另加一个：
+* `"mineable"`：方块 tag 的资源位置，包含该工具能比空手更快开采的方块列表。若方块设置了 "requires_tool_for_drops" 标志，那么空手或 tag 中不含该方块的工具将无法获得掉落物。
 
 ## "tiered"
 
-Used for items that have tiers, but are not diggers or weapons.
+用于有等级、但不是挖掘工具或武器的物品。
 
-Parameters:
-* `"tier"`: The name of an item tier.
-
+参数：
+* `"tier"`：物品等级的名称。

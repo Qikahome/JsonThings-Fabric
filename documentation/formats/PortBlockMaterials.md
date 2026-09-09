@@ -1,37 +1,37 @@
-# Updating from Block Materials
+# 从方块材质（Block Material）迁移
 
-Block Materials used to define the map color and some basic properties of blocks.
+方块材质过去用于定义方块的地图颜色与一些基础属性。
 
-They have been removed in 1.20. Existing material definitions need to be moved to the block json 
+它们在 1.20 中已被移除。已有的材质定义需要迁移到方块 JSON 中。
 
 ## "map_color"
 
-The existing map color property in the block needs to be used instead. The format is the same.
+改用方块中的地图颜色属性。格式相同。
 
 ## "liquid"
 
-I have decided not to provide a replacement for this. It is implied in the liquid block type.
+决定不为此提供替代。它已隐含在 liquid 方块类型中。
 
 ## "flammable"
 
-Use the "ignited_by_lava" property of the block.
+改用方块的 "ignited_by_lava" 属性。
 
 ## "replaceable"
 
-The property has been moved as-is to the block.
+该属性原样迁移到了方块中。
 
 ## "solid"
 
-Set the "not_solid" property of the block to true.
+若原材质为非实心，将方块的 "not_solid" 属性设为 true。
 
 ## "blocks_motion"
 
-The property has been moved as-is to the block.
+该属性原样迁移到了方块中。
 
 ## "solid_blocking"
 
-This property has no equivalent, it's defined by the voxel shape, and overriden by the "force_solid" and "blocks_motion" properties.
+此属性没有对应物：它由 Voxel 形状决定，并可被 "force_solid" 与 "blocks_motion" 属性覆盖。
 
 ## "push_reaction"
 
-The property has been moved as-is to the block.
+该属性原样迁移到了方块中。

@@ -1,27 +1,26 @@
-# Fluid Factories
+# 流体工厂（Fluid Factory）
 
-Fluids come in many... well 2 types, by default. Basic, and in-world (flowing).
+流体默认只有两种……好吧，两种类型：普通型（plain），和世界型（可流动）。
 
-To support flowing fluids and other custom fluid implementations, the fluid types provide extra values that can be specified,
-and trigger other behaviours.
+为了支持流动流体及其他自定义流体实现，流体类型还提供了一些额外的字段，可以触发不同的行为。
 
-More types can be added in the future as needed.
+未来可以根据需要添加更多类型。
 
 ## "plain"
 
-Default fluid type. Can only exist in containers. Cannot be placed in the world.
+默认流体类型。只能存在于容器中，不能放置在世界中。
 
-No default fluidstate properties.
+没有默认的 FluidState 属性。
 
 ## "flowing"
 
-A block that can be placed in multiple cardinal directions, including up and down.
+一种可以放置在多个方向的方块流体，包括向上和向下。
 
-Can be placed in the world.
+可以放置在世界中。
 
-Default fluidstate properties: level (required, cannot be removed)
+默认 FluidState 属性：`level`（必填，不可移除）。
 
-Flowing fluids have some extra parameters that don't exist for plain fluids.
+流动流体有一些普通流体没有的额外参数。
 
 ```json
 {
@@ -37,50 +36,50 @@ Flowing fluids have some extra parameters that don't exist for plain fluids.
 
 ### "block"
 
-Defines the fluids's placeable block.
+定义流体的可放置方块。
 
-Optional. Default: no block. If not used, the fluid will not be able to exist in the world.
+可选。默认：无方块。若不使用，流体将无法存在于世界中。
 
-Can be one of 2 types:
-* A Boolean: If `true`, the fluid block will have all the default properties.
-* A json object (`{}`) containing the definition of a block, as seen in the [Blocks](./Blocks.md) page.
+可以是 2 种形式之一：
+* 布尔值：若为 `true`，流体方块将使用全部默认属性。
+* JSON 对象（`{}`）：包含方块定义的各字段（见 [方块](./Blocks.md) 页面）。内联的方块定义中不允许包含 `"fluid"` 字段。
 
 ### "can_convert_to_source"
 
-Defines if the block can form new source blocks when 2 sources are spaced 1 block apart.
+定义当两个源方块相隔 1 格时，流体能否形成新的源方块。
 
-Optional. Default: false (no source creation).
+可选。默认：false（不产生源方块）。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ### "slope_distance"
 
-Defines how far the game will scan when looking for holes the fluid can flow toward.
+定义游戏在寻找流体可以流过的空洞时的扫描距离。
 
-Optional. Default: 4.
+可选。默认：4。
 
-Must be an integer number bigger than zero.
+必须是大于零的整数。
 
 ### "dropoff"
 
-Defines how much the level drops off by for each blow the fluid spreads out from its source.
+定义流体每向外扩散一格时，液位下降的量。
 
-Optional. Default: 1.
+可选。默认：1。
 
-Must be an integer number between 1 and 8.
+必须是介于 1 与 8 之间的整数。
 
 ### "tick_delay"
 
-Defines how much time the game waits between fluid updates.
+定义游戏在两次流体更新之间等待的时间。
 
-Optional. Default: 5.
+可选。默认：5。
 
-Must be an integer bigger than or equal to zero.
+必须是大于或等于零的整数。
 
 ### "explosion_resistance"
 
-Defines how much explosions weaken when passing through the fluid blocks.
+定义爆炸经过流体方块时被削弱的程度。
 
-Optional. Default: 100.
+可选。默认：100。
 
-Must be a number.
+必须是数字。

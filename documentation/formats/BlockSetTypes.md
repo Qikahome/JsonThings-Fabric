@@ -1,17 +1,17 @@
-# Sound Type Definitions
+# 方块集类型（Block Set Type）定义
 
-EXPERIMENTAL.
+实验性。
 
-Sound Type definitions let you specify a new set of sounds for a new block material.
+方块集类型定义用于为门、活板门、压力板、按钮等需要成套音效与行为的方块指定一组属性。木头方块应声明为 `is_wood: true`，并额外提供栅栏门与悬挂式告示牌的声音。
 
-Sound Type definitions go in the `sound_type` directory in the thing pack.
+方块集类型定义放在 thing 包的 `block_set_type` 目录中。
 
-E.g.
+例如：
 ```
-/things/examplepack/sound_event/scream.json
+/things/examplepack/block_set_type/scream.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -27,122 +27,131 @@ E.g.
   "is_wood": true,
   "hanging_sign_sound_type": "some:sound_type",
   "fence_gate_close": "some:sound_event",
-  "fence_gate_open": "some:sound_event"
+  "fence_gate_open": "some:sound_event",
+  "can_open_by_hand": true
 }
 ```
 
 ## "sound_type"
 
-Defines which [Sound Type](./SoundTypes.md) the block set will use.
+定义该方块集使用的 [声音类型](./SoundTypes.md)。
 
-Optional. Default: wood.
+可选。默认：wood。
 
-Must be a resource location string like `"wood"`, or `"minecraft:wood"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"wood"`，或 `"minecraft:wood"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "door_close"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a door is closed.
+定义门关闭时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_door_close.
+可选。默认：wooden_door_close。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "door_open"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a door is opened.
+定义门打开时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_door_open.
+可选。默认：wooden_door_open。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "trapdoor_close"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a trapdoor is closed.
+定义活板门关闭时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_trapdoor_close.
+可选。默认：wooden_trapdoor_close。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "trapdoor_open"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a trapdoor is opened.
+定义活板门打开时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_trapdoor_open.
+可选。默认：wooden_trapdoor_open。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "pressure_plate_off"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a pressure plate is released.
+定义压力板被释放时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_pressure_plate_click_off.
+可选。默认：wooden_pressure_plate_click_off。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "pressure_plate_on"
 
-Defines which [Sound Event](./SoundEvents.md) to use when something steps on a pressure plate.
+定义有东西踩上压力板时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_pressure_plate_click_on.
+可选。默认：wooden_pressure_plate_click_on。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "button_off"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a button clicks off.
+定义按钮弹起（关闭）时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_button_click_off.
+可选。默认：wooden_button_click_off。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "button_on"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a button is pressed.
+定义按钮按下（开启）时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: wooden_button_click_on.
+可选。默认：wooden_button_click_on。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "is_wood"
 
-Defines if the block set type represents a wood type.
+定义该方块集类型是否代表一种木头类型。为 true 时，会额外向游戏注册对应的 WoodType（木头类型）。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean `true` or `false`.
+必须是布尔值（`true` 或 `false`）。
 
 ## "hanging_sign_sound_type"
 
-Defines which [Sound Type](./SoundTypes.md) the hanging sign will use.
+定义悬挂式告示牌使用的 [声音类型](./SoundTypes.md)。
 
-Optional. Default: hanging_sign.
+可选。默认：hanging_sign。
 
-Must be a resource location string like `"wood"`, or `"minecraft:wood"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"wood"`，或 `"minecraft:wood"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "fence_gate_close"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a fence gate closes.
+定义栅栏门关闭时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: fence_gate_close.
+可选。默认：fence_gate_close。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "fence_gate_open"
 
-Defines which [Sound Event](./SoundEvents.md) to use when a fence gate opens.
+定义栅栏门打开时使用的 [音效事件](./SoundEvents.md)。
 
-Optional. Default: fence_gate_open.
+可选。默认：fence_gate_open。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
+
+## "can_open_by_hand"
+
+定义该方块集对应的门等方块能否直接用手打开（无需按钮等红石信号）。
+
+可选。默认：true。
+
+必须是布尔值（`true` 或 `false`）。

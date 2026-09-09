@@ -1,35 +1,35 @@
-# Json Things: An Introduction
+# Json Things 简介
 
-A Thing Pack supports a set of file types for defining different things.
+Thing 包支持一组文件类型，用于定义不同类型的"事物"（thing）。
 
-## Current Supported Formats
+## 当前支持的格式
 
-### Formats with their own JSON files
+### 拥有独立 JSON 文件的格式
 
-* [Items](./formats/Items.md)
-  * [Item Tiers](./formats/ItemTiers.md)
-  * [Armor Materials](./formats/ArmorMaterials.md)
-  * [Food Definitions](./formats/Food.md)
-  * [Creative Mode Tabs](./formats/CreativeModeTabs.md)
-* [Blocks](./formats/Blocks.md)
-  * [Voxel Shape models](./formats/VoxelShapes.md)
-  * [Block Set Types](./formats/BlockSetTypes.md)
-  * [Sound Types](./formats/SoundTypes.md)
-  * [Updating from Block Materials](./formats/PortBlockMaterials.md)
-* [Fluids](./formats/Fluids.md)
-  * [Fluid Types](./formats/FluidTypes.md)
-* [Enchantments](./formats/Enchantments.md)
-* [Sound Events](./formats/SoundEvents.md)
+* [物品](./formats/Items.md)
+  * [物品等级（Tier）](./formats/ItemTiers.md)
+  * [护甲材料](./formats/ArmorMaterials.md)
+  * [食物定义](./formats/Food.md)
+  * [创造模式标签页](./formats/CreativeModeTabs.md)
+* [方块](./formats/Blocks.md)
+  * [Voxel 形状模型](./formats/VoxelShapes.md)
+  * [方块集类型](./formats/BlockSetTypes.md)
+  * [声音类型](./formats/SoundTypes.md)
+  * [从方块材质（Block Material）迁移](./formats/PortBlockMaterials.md)
+* [流体](./formats/Fluids.md)
+  * [流体类型](./formats/FluidTypes.md)
+* [附魔](./formats/Enchantments.md)
+* [音效事件](./formats/SoundEvents.md)
 
-### Formats used inside other JSON files
+### 在其他 JSON 文件中使用的格式
 
-* [Ingredients](./formats/Ingredient.md)
-* [Item Stacks](./formats/ItemStack.md)
-* [Effect Instances](./formats/EffectInstances.md)
-* [Attribute Modifiers](./formats/AttributeModifiers.md)
+* [原料（Ingredient）](./formats/Ingredient.md)
+* [物品堆叠（Item Stack）](./formats/ItemStack.md)
+* [效果实例（Effect Instance）](./formats/EffectInstances.md)
+* [属性修饰符（Attribute Modifier）](./formats/AttributeModifiers.md)
 
-### Version
+### 版本说明
 
-This documentation is for the 1.20 version of the mod.
+本文档针对本模组的 1.20 版本编写。
 
-For other versions see the appropriate branch in the branch selector.
+其他版本请参考分支选择器中对应的分支。

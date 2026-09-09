@@ -1,17 +1,17 @@
-# Food Definitions
+# 食物（Food）定义
 
-Food definitions let you define the properties of food items. They can be defined by name, or included directly in an item's `"food"` key.
+食物定义用于定义食物物品的属性。可以具名定义，也可以直接内联在物品的 `"food"` 键中。
 
-Named food definitions go in the `food` directory in the thing pack.
+具名的食物定义放在 thing 包的 `food` 目录中。
 
-E.g.
+例如：
 ```
 /things/examplepack/food/stick.json
 ```
 
-NOTE: Food definitions **do not** automatically create an item. You must define an item that uses the food definition for it to appear ingame.
+注意：食物定义**不会**自动创建物品。你必须定义一个使用该食物定义的物品，它才会出现在游戏中。
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -21,74 +21,77 @@ NOTE: Food definitions **do not** automatically create an item. You must define 
   "fast": false,
   "always_eat": false,
   "effects": [
-    
-  ]  
+
+  ]
 }
 ```
 
 ## "nutrition"
 
-Defines how much hunger this food restores.
+定义该食物恢复多少饥饿值。
 
-Required.
+必填。
 
-Must be a positive integer bigger than zero.
+必须是大于零的正整数。
 
 ## "saturation"
 
-Defines how much saturation this food adds. Saturation is the delay until hunger restarts.
+定义该食物提供多少饱和度。饱和度是饥饿值停止下降（重新开始消耗）之前的缓冲值。
 
-Required.
+必填。
 
-Must be a positive number or zero. Decimals are allowed. 
+必须是大于等于零的数字。允许小数。
 
 ## "meat"
 
-Defines if the food is considered meat. Meats are appealing to carnivores like wolves.
+定义该食物是否算作肉。肉对狼等肉食动物有吸引力。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "fast"
 
-Defines if the food can be eaten fast.
+定义该食物能否快速食用（食用所需时间更短）。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "always_eat"
 
-Defines if the food can be eaten with a full stomach. Should only be used for snack foods and not big meals.
+定义该食物即使在饥饿值满时也能食用。应只用于零食类食物，而非正餐。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "effects"
 
-Defines a list of effects that are applied when the food is eaten.
+定义食用该食物时施加的效果列表。
 
-Optional. Default: no effects.
+可选。默认：无效果。
 
-Must be a json array (`[]`) containing a series of json objects (`{}`), as defined below. 
+必须是包含一系列 JSON 对象（`{}`）的 JSON 数组（`[]`），格式如下。
 
-The format for the effect is as follows:
+每个条目的格式如下：
 
 ```json
 {
   "effects": [
     {
+      "probability": 1.0,
       "effect": "minecraft:poison",
       "duration": 5,
       "amplifier": 0,
       "visible": true,
       "show_particles": true,
-      "show_icon": true      
+      "show_icon": true
     }
   ]
 }
 ```
 
-See the [Effect Instances](./EffectInstances.md) documentation page for details on the meaning of the values.
+`"probability"` 可选，定义该效果被施加的概率，取值介于 0 与 1 之间。默认：1.0。
+
+其余取值的含义见 [效果实例](./EffectInstances.md) 文档页面。

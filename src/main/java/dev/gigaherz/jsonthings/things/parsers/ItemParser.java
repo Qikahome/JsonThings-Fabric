@@ -106,7 +106,9 @@ public class ItemParser extends ThingParser<ItemBuilder>
                 .ifKey("lore", val -> val.array().unwrapRaw(this::parseLore).handle(builder::setLore))
                 .ifKey("tool_actions", val -> val.array().strings().flatten(StringValue::getAsString, String[]::new).handle(builder::setToolActions))
                 .ifKey("events", val -> val.obj().map(this::parseEvents).handle(builder::setEventMap))
-                .ifKey("burn_duration", val -> val.intValue().min(1).handle(builder::setBurnDuration));
+                // 0 表示不作为燃料（对应 Forge getBurnTime / Fabric FuelRegistry 中 0 = 非燃料的语义），
+                // 同时用于覆盖从父级继承的 burn_duration。
+                .ifKey("burn_duration", val -> val.intValue().min(0).handle(builder::setBurnDuration));
 
         builderModification.accept(builder);
 

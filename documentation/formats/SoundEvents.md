@@ -1,17 +1,17 @@
-# Sound Event Definitions
+# 音效事件（Sound Event）定义
 
-EXPERIMENTAL.
+实验性。
 
-Sound Event definitions let you define a new sound you can play.
+音效事件定义允许你定义一个新的可播放声音。
 
-Sound Event definitions go in the `sound_event` directory in the thing pack.
+音效事件定义放在 thing 包的 `sound_event` 目录中。
 
-E.g.
+例如：
 ```
 /things/examplepack/sound_event/scream.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -21,8 +21,8 @@ E.g.
 
 ## "range"
 
-Defines the maximum distance at which the sound can be heard.
+定义声音可被听到的最大距离。
 
-Optional. Default: use legacy sound mechanics.
+可选。默认：使用旧版声音机制。
 
-Must be a positive number.
+必须是正数。

@@ -1,15 +1,15 @@
-# Enchantments
+# 附魔（Enchantment）
 
-Enchantment definitions let you define new enchantments.
+附魔定义允许你定义新的附魔。
 
-Enchantment definitions go in the `enchantment` directory in the thing pack.
+附魔定义放在 thing 包的 `enchantment` 目录中。
 
-E.g.
+例如：
 ```
 /things/examplepack/enchantment/deadly.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -22,112 +22,112 @@ E.g.
 
 ## "rarity"
 
-Defines the rarity of the enchantment.
+定义附魔的稀有度。
 
-Optional. Default: common.
+可选。默认：common。
 
-Must be one of these strings: `"common"`, `"uncommon"`, `"rare"`, `"very_rare"`.
+必须是以下字符串之一：`"common"`、`"uncommon"`、`"rare"`、`"very_rare"`。
 
 ## "type"
 
-Defines the type of enchantment.
+定义附魔的类型（可作用的物品类别）。
 
-Optional. Default: breakable.
+可选。默认：breakable。
 
-Must be one of these strings: `"breakable"`, `"armor"`, `"armor_feet"`, `"armor_legs"`, `"armor_chest"`, `"armor_head"`, `"weapon"`, `"digger"`, `"fishing_rod"`, `"trident"`, `"bow"`, `"wearable"`, `"crossbow"`, `"vanishable"`.
+必须是以下字符串之一：`"breakable"`、`"armor"`、`"armor_feet"`、`"armor_legs"`、`"armor_chest"`、`"armor_head"`、`"weapon"`、`"digger"`、`"fishing_rod"`、`"trident"`、`"bow"`、`"wearable"`、`"crossbow"`、`"vanishable"`。
 
 ## "min_level"
 
-Defines the minimum enchantment level that appears in the creative menu and in the enchanting table.
+定义附魔出现在创造模式菜单与附魔台中的最低等级。
 
-Optional. Default: 1.
+可选。默认：1。
 
-Must be a positive integer bigger than zero.
+必须是大于零的正整数。
 
 ## "max_level"
 
-Defines the maximum enchantment level that appears in the creative menu and in the enchanting table.
+定义附魔出现在创造模式菜单与附魔台中的最高等级。
 
-Optional. Default: 1.
+可选。默认：1。
 
-Must be a positive integer bigger than zero. Must be bigger or equal to `"min_level"`.
+必须是大于零的正整数。必须大于或等于 `"min_level"`。
 
 ## "base_cost"
 
-Defines the base enchantability cost of this enchant. Bigger numbers will make it harder to obtain the enchantments along with other enchantments.
+定义该附魔的基础附魔成本。数值越大，该附魔与其他附魔同时获得的难度越高。
 
-Optional. Default: 1.
+可选。默认：1。
 
-Must be a positive integer or zero.
+必须是非负整数。
 
 ## "per_level_cost"
 
-Defines the per-level enchantability cost increase of this enchant. Bigger numbers will make it harder to obtain the enchantments along with other enchantments.
+定义该附魔每级的附魔成本增幅。数值越大，该附魔与其他附魔同时获得的难度越高。
 
-Optional. Default: 10.
+可选。默认：10。
 
-Must be a positive integer or zero.
+必须是非负整数。
 
 ## "random_cost"
 
-Defines the random variance in the enchantability cost of this enchant. Bigger numbers will make it harder to obtain the enchantments along with other enchantments.
+定义该附魔成本的随机浮动范围。数值越大，该附魔与其他附魔同时获得的难度越高。
 
-Optional. Default: 5.
+可选。默认：5。
 
-Must be a positive integer or zero.
+必须是非负整数。
 
 ## "item_compatibility"
 
-Defines an item predicate which matches compatible items for this enchantment.
+定义与该附魔兼容的物品谓词（item predicate）。
 
-Optional. Default: all items are allowed.
+可选。默认：允许所有物品。
 
-See the vanilla documentation on item predicates, which are used in both advancement criteria and loot tables.
+参见原版关于物品谓词的文档——它同时用于进度条件与战利品表。
 
 ## "disallow_enchants"
 
-Defines a list of enchantments that are not allowed to exist at the same time as this enchantment.
+定义不能与该附魔同时存在的附魔列表。
 
-Optional. Default: all enchants that don't disallow this are allowed.
+可选。默认：所有不禁用本附魔的附魔都允许。
 
-Must be a json array (`[]`) containing strings of resource locations of other enchantments.
+必须是包含其他附魔资源位置字符串的 JSON 数组（`[]`）。
 
 ## "treasure"
 
-Defines if the enchantment is treasure. If true, it will only be obtainable in loot, and won't appear in the enchanting table.
+定义该附魔是否为宝藏附魔。若为 true，它只能通过战利品获得，不会出现在附魔台中。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "curse"
 
-Defines if the enchantment is a curse. If true, it will show red in the tooltip.
+定义该附魔是否为诅咒附魔。若为 true，它在提示框中显示为红色。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "tradeable"
 
-Defines if the enchantment is tradeable. If true, it will appear in the villager trades.
+定义该附魔可否交易。若为 true，它会出现在村民交易中。
 
-Optional. Default: true.
+可选。默认：true。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "discoverable"
 
-Defines if the enchantment is discoverable. If true, it will appear in loot.
+定义该附魔可否被发现在战利品中。若为 true，它会出现在战利品中。
 
-Optional. Default: true.
+可选。默认：true。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "allow_on_books"
 
-Defines if the enchantment is allowed to be on books. If true, it will appear when enchanting books.
+定义该附魔是否允许附在书上。若为 true，它会出现在给书附魔时。
 
-Optional. Default: true.
+可选。默认：true。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。

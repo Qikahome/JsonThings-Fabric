@@ -1,141 +1,153 @@
-# Block Types
+# 方块类型（Block Type）
 
-Blocks come in many types. Some common blocks require special handling such as special superclasses to be used in code.
+方块有多种类型。一些常见方块需要特殊处理，例如在代码中使用特殊的超类。
 
-To support those special blocks, there's a number of block types that can be specified in the json.
+为了支持这些特殊方块，JSON 中可以指定多种方块类型。
 
-More types will be added in the future as needed.
+未来可以根据需要添加更多类型。
 
 ## "plain"
 
-Default block type.
+默认方块类型。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-No default blockstate properties.
+无默认 BlockState 属性。
 
 ## "falling"
 
-A plain block that falls when not supported by a block underneath.
+下方无支撑方块时就会下落的普通方块（类似沙砾）。
 
-Default render layer: solid.
+默认渲染层：cutout。
 
-No default blockstate properties.
+无默认 BlockState 属性。
 
-Parameters:
-* `"dust_color"`: The color of the dust particle that appears when the block is unsupported but not yet falling. Can be an integer or an object. If it's an object it must have `"r"`, `"g"`, `"b"` and optionally `"a"`.
-    * Optional. Default: white (r=g=b=255).
+参数：
+* `"dust_color"`：当方块失去支撑但尚未下落时产生的灰尘粒子的颜色。可以是整数或对象；对象须包含 `"r"`、`"g"`、`"b"` 键以及可选的 `"a"` 键。
+    * 可选。默认：白色（r=g=b=255）。
 
 ## "directional"
 
-A block that can be placed in multiple cardinal directions, including up and down.
+可以朝多个方向（包括上下）放置的方块。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: facing
+默认 BlockState 属性：facing
 
 ## "horizontal_directional"
 
-A block that can be placed in multiple cardinal directions, but only the horizontal ones.
+可以朝多个水平方向放置的方块。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: facing
+默认 BlockState 属性：facing
 
 ## "rotated_pillar"
 
-A block that can be placed in axis directions, like logs and pillars, where opposing cardinal directions look the same.
+可以沿轴向放置的方块，如原木与柱子；相对的两个水平方向外观相同。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: axis
+默认 BlockState 属性：axis
 
 ## "slab"
 
-A block that has the properties of a slab, including waterlogging.
+具有台阶（slab）属性的方块，包括含水（waterlogging）。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: type, waterlogged
+默认 BlockState 属性：type、waterlogged
 
 ## "stairs"
 
-A block that has the properties of a stair block, including waterlogging.
+具有楼梯（stair）属性的方块，包括含水。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: facing, half, shape, waterlogged
+默认 BlockState 属性：facing、half、shape、waterlogged
 
-Note: Parent block is required for this type.
+注意：该类型需要父级方块。可通过方块 JSON 的 `"parent"` 键指定，也可用参数 `"stairs_parent"` 单独指定用作楼梯基础形状的方块。
 
 ## "wall"
 
-A block that has the properties of a wall, including waterlogging.
+具有墙（wall）属性的方块，包括含水。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: up, east_wall, north_wall, south_wall, west_wall, waterlogged
+默认 BlockState 属性：up、east_wall、north_wall、south_wall、west_wall、waterlogged
 
 ## "fence"
 
-A block that has the properties of a fence, including waterlogging.
+具有栅栏（fence）属性的方块，包括含水。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: east, north, south, west, waterlogged
+默认 BlockState 属性：east、north、south、west、waterlogged
 
 ## "fence_gate"
 
-A block that has the properties of a fence gate.
+具有栅栏门（fence gate）属性的方块。
 
-Default render layer: solid.
+默认渲染层：solid。
 
-Default blockstate properties: open, powered, in_wall
+默认 BlockState 属性：open、powered、in_wall
+
+参数：
+* `"wood_type"`：使用的 WoodType（木头类型）名称，决定声音等属性。
+    * 必填。
 
 ## "leaves"
 
-A block that has the properties of leaves.
+具有树叶（leaves）属性的方块。
 
-Default render layer: cutout_mipped. Also defaults to not solid.
+默认渲染层：cutout_mipped。默认也不视为实心。
 
-Default blockstate properties: distance, persistent
+默认 BlockState 属性：distance、persistent
 
 ## "door"
 
-A block that has the properties of a wooden door.
+具有木门属性的方块。
 
-Default render layer: cutout. Also defaults to not solid.
+默认渲染层：cutout。默认也不视为实心。
 
-Default blockstate properties: facing, open, hinge, powered, half
+默认 BlockState 属性：facing、open、hinge、powered、half
+
+参数：
+* `"block_set_type"`：使用的 BlockSetType（方块集类型）名称，决定声音等属性。
+    * 必填。
 
 ## "trapdoor"
 
-A block that has the properties of a wooden trapdoor, including waterlogging.
+具有木活板门属性的方块，包括含水。
 
-Default render layer: cutout. Also defaults to not solid.
+默认渲染层：cutout。默认也不视为实心。
 
-Default blockstate properties: open, half, powered, waterlogged
+默认 BlockState 属性：open、half、powered、waterlogged
+
+参数：
+* `"block_set_type"`：使用的 BlockSetType（方块集类型）名称，决定声音等属性。
+    * 必填。
 
 ## "sapling"
 
-A sapling for a tree. Only supports single sapling growth, no 2x2 "mega tree".
+树的树苗。仅支持单树苗生长，不支持 2x2 的"巨树"。
 
-Default render layer: cutout.
+默认渲染层：cutout。
 
-No default blockstate properties.
+无默认 BlockState 属性。
 
-Parameters:
-* `"tree_feature"`: The registry name of the feature this sapling will spawn once it grows.
-    * Required.
+参数：
+* `"tree_feature"`：树苗长大时生成的地物（feature）注册名。
+    * 必填。
 
 ## "liquid"
 
-A block representing a fluid contained in the block grid.
+表示填充在方块网格中的流体的方块。
 
-Default render layer: translucent.
+默认渲染层：translucent。默认视为可透视。
 
-Default blockstate properties: level.
+默认 BlockState 属性：level。
 
-Parameters:
-* `"fluid"`: The registry name of the contained fluid.
-    * Required.
+参数：
+* `"fluid"`：所包含流体的注册名。
+    * 必填。

@@ -1,59 +1,59 @@
-# Item Stack Definition
+# 物品堆叠（Item Stack）定义
 
-Item Stacks link an item with a count and optional tags, they are the essential object through which Items are used.
+物品堆叠将物品与数量及可选的 NBT 关联起来，是物品被使用时的基本对象。
 
-Item Stack definitions are not named, but rather contained within other json files.
+物品堆叠定义没有具名形式，而是内嵌在其他 JSON 文件中。
 
-See [Items](./Items.md#creative_menu_stacks) for an example of where this is used.
+使用示例见 [物品](./Items.md#creative_menu_stacks)。
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
   "item": "minecraft:stick",
   "count": 10,
-  "nbt": { }  
+  "nbt": { }
 }
 ```
 
 ## "item"
 
-Defines the item to be used in the stack.
+定义堆叠中使用的物品。
 
-Not supported in the Item's "creative_menu_stacks".
+在物品的 "creative_menu_stacks" 中不支持。
 
-Required when supported. Default: item provided by context.
+在支持的场合为必填。默认：由上下文提供的物品。
 
-Must be a resource location string like `"string"`, or `"minecraft:stick"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"string"`，或 `"minecraft:stick"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "count"
 
-Defines the number of items in the stack.
+定义堆叠中的物品数量。
 
-Not supported in the Item's "creative_menu_stacks". Creative menu stacks should always be 1.
+在物品的 "creative_menu_stacks" 中不支持。创造模式堆叠应始终为 1。
 
-Optional. Default: 1.
+可选。默认：1。
 
-Must be a positive integer bigger than zero.
+必须是大于零的正整数。
 
 ## "nbt"
 
-Defines the NBT Tag attached to the stack.
+定义附加到堆叠上的 NBT 标签。
 
-Optional. Default: no NBT.
+可选。默认：无 NBT。
 
-Can have 2 formats:
+可以有 2 种格式：
 
-* A string with the tag format as specified in the ingame `/give` command.
+* 字符串，使用游戏内 `/give` 命令的标签格式。
     ```
       "{Damage:10b}"
     ```
-* A json object (`{}`) with the tag hierarchy defined explicitly.
+* JSON 对象（`{}`），显式定义标签层级。
     ```json
       {
         "Damage": 10
       }
     ```
 
-The string version allows using explicit types, which may be necessary in some cases.
+字符串形式允许指定显式类型，在某些情况下可能是必要的。

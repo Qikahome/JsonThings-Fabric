@@ -1,11 +1,10 @@
-# Effect Instance Definitions
+# 效果实例（Effect Instance）定义
 
-This format applies to effect instances as defined in other json files. There is no named definitions for effect instances
-at this point.
+该格式适用于在其他 JSON 文件中定义的效果实例。目前效果实例没有具名定义。
 
-See [Food](./Food.md) for an example of where this is used.
+使用示例见 [食物](./Food.md)。
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -13,6 +12,7 @@ See [Food](./Food.md) for an example of where this is used.
   "duration": 5,
   "amplifier": 0,
   "ambient": false,
+  "visible": true,
   "show_particles": true,
   "show_icon": true
 }
@@ -20,53 +20,59 @@ See [Food](./Food.md) for an example of where this is used.
 
 ## "effect"
 
-Defines which potion effect to apply.
+定义要施加的药水效果。
 
-Required.
+必填。
 
-Must be a resource location string like `"poison"`, or `"minecraft:blindness"`. Like on model jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"poison"`，或 `"minecraft:blindness"`。与模型 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "duration"
 
-Defines how long the effect lasts, in ingame ticks (20ths of a second).
+定义效果持续的时间，单位为游戏刻（每秒 20 刻）。
 
-Required. 
+必填。
 
-Must be a positive integer.
+必须是非负整数。
 
 ## "amplifier"
 
-Defines how strong the effect is. Higher numbers increase the potency of the effect further.
+定义效果的强度。数值越高，效果的强度越大。
 
-Optional. Default: 0. 
+可选。默认：0。
 
-The default means no amplification, and will do the standard effect.
+0 表示不放大，即标准效果。
 
-Must be a positive integer or zero.
+必须是非负整数。
 
 ## "ambient"
 
-Defines if the effect should be considered an ambient effect such as coming from a beacon. Ambient effects appear
-in a different color and without a countdown. It is advised not to set the "ambient" property to true for foods and other
-contextual effects.
+定义效果是否应被视为环境效果（例如来自信标的效果）。环境效果以不同的颜色显示，且没有倒计时。建议不要为食物等情境效果将 "ambient" 设为 true。
 
-Optional. Default: false.
+可选。默认：false。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
+
+## "visible"
+
+定义效果是否显示在屏幕右上方的状态图标区域。
+
+可选。默认：true。
+
+必须是布尔值（`false` 或 `true`）。
 
 ## "show_particles"
 
-Defines if the effect produces particles around the player.
+定义效果是否在实体周围产生粒子。
 
-Optional. Default: true.
+可选。默认：true。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。
 
 ## "show_icon"
 
-Defines if the effect has an icon in the top right of the HUD.
+定义效果是否在 HUD 右上方显示图标。
 
-Optional. Default: true.
+可选。默认：true。
 
-Must be a boolean (`false` or `true`).
+必须是布尔值（`false` 或 `true`）。

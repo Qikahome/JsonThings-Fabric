@@ -127,11 +127,6 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         // 流体渲染 handler 由 FabricatedForgeFluid 的 FluidRenderHandlerRegistrar 自动注册
         // （遍历流体注册表，对所有 FabricatedFluidType 调用 initializeClient）。
 
-        // 注册流体桶模型 loader（jsonthings:fluid_bucket）
-        io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback.EVENT.register(loaders ->
-                loaders.put(new ResourceLocation("jsonthings", "fluid_bucket"),
-                        dev.gigaherz.jsonthings.things.client.JsonThingsFluidBucketModel.Loader.INSTANCE));
-
         BlockColorHandler.init();
         ItemColorHandler.init();
 

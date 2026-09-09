@@ -1,15 +1,15 @@
-# Food Definitions
+# 形状（Shape）定义
 
-Food definitions let you define the properties of food items. They can be defined by name, or included directly in an item's `"food"` key.
+形状定义用于定义方块在不同状态下的碰撞体积。可以具名定义，也可以直接内联在方块的 shape 键中。
 
-Named food definitions go in the `food` directory in the thing pack.
+具名的形状定义放在 thing 包的 `shape` 目录中。
 
-E.g.
+例如：
 ```
-/things/examplepack/food/stick.json
+/things/examplepack/shape/state.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -26,59 +26,59 @@ E.g.
 }
 ```
 
-## Basic Shape
+## 基础形状（Basic Shape）
 
-Basic shapes can be defined in 2 ways:
+基础形状有两种定义方式：
 
-* As a json object (`{}`) with the properties `x1`, `y1`, `z1`, `x2`, `y2`, and `z2`, corresponding to the 2 corners of the axis-aligned box.
-* As a json array (`[]`), with 6 numbers corresponding to the values in the same order: `[x1, y1, z1, x2, y2, z2]`. 
+* 作为 JSON 对象（`{}`），包含 `x1`、`y1`、`z1`、`x2`、`y2`、`z2` 属性，对应轴对齐盒体的两个对角。
+* 作为 JSON 数组（`[]`），包含 6 个数字，顺序与上相同：`[x1, y1, z1, x2, y2, z2]`。
 
-## Compound Shape
+## 复合形状（Compound Shape）
 
-Like basic shapes, compound shapes can be defined in 2 ways:
+与基础形状类似，复合形状也有两种定义方式：
 
-* As a json object (`{}`) with two fields, "op" and "shapes"
+* 作为 JSON 对象（`{}`），包含两个字段 "op" 与 "shapes"：
     ```json
       {
         "op": "OR",
         "shapes": []
-      } 
+      }
     ```
-  * `"op"`: Optional. Default: OR. A boolean operation name to be used when combining successive shapes. The operation is applied left to right.
-    * "false": All shapes are ignored. The result is an empty shape.
-    * "not_or": The result includes only the parts that are outside **all** the child shapes.
-      * Equivalent to the inverse of the union shape in CSG.
-    * "only_second": The result includes all areas present in the second shape, that are not present in the first shape.
-    * "not_first": The result ignores all but the first shape, and returns the inverse of the first shape.
-    * "only_first": The result includes all areas present in the first shape, that are not present in the second shape.
-    * "not_second": The result ignores all but the last shape, and returns the inverse of the last shape.
-    * "not_same": The result includes all areas that are present in one shape or the other, but not both.
-      * Equivalent to the difference shape in CSG.
-    * "not_and": The result includes all areas that are outside **any** of the child shapes.
-      * Equivalent to the inverse of the intersection shape in CSG.
-    * "and": The result includes only the areas that are present in **all** of the child shapes.
-      * Equivalent to the intersection shape in CSG.
-    * "same": The result includes all areas that are either outside all shapes, or inside all shapes.
-      * Equivalent to the inverse of the difference shape.
-    * "second": The result ignores all but the last shape.
-    * "causes": The result includes the areas outside the first shape, combined with the areas inside the second shape.
-    * "first": The result ignores all but the first shape.
-    * "caused_by": The result includes the areas inside the first shape, combined with the areas outside the second shape.
-    * "or": The result contains all areas present in **any** shape.
-      * Equivalent to the union shape in CSG.
-    * "true": All shapes are ignored. The result is a full box shape.
-  * `"shapes"`: Required. A json array (`[]`) containing the child shapes to combine.
-* As a json array (`[]`), with 6 numbers corresponding to the values in the same order: `[x1, y1, z1, x2, y2, z2]`.
+  * `"op"`：可选。默认：OR。用于依次组合子形状的布尔运算名。运算从左到右进行。
+    * "false"：忽略所有形状，结果是空形状。
+    * "not_or"：结果只包含位于**所有**子形状之外的部分。
+      * 等价于 CSG（构造实体几何）中并集的补。
+    * "only_second"：结果包含第二个形状中存在、但第一个形状中不存在的所有区域。
+    * "not_first"：忽略除第一个外的所有形状，返回第一个形状的补。
+    * "only_first"：结果包含第一个形状中存在、但第二个形状中不存在的所有区域。
+    * "not_second"：忽略除最后一个外的所有形状，返回最后一个形状的补。
+    * "not_same"：结果包含恰好存在于其中一个形状中、而非两者共有的区域。
+      * 等价于 CSG 中的差。
+    * "not_and"：结果包含位于**任一**子形状之外的所有区域。
+      * 等价于 CSG 中交集的补。
+    * "and"：结果只包含同时存在于**所有**子形状中的区域。
+      * 等价于 CSG 中的交集。
+    * "same"：结果包含要么在所有形状之外、要么在所有形状之内的所有区域。
+      * 等价于 CSG 中差的补。
+    * "second"：忽略除最后一个外的所有形状。
+    * "causes"：结果包含第一个形状之外的区域，与第二个形状之内的区域的并集。
+    * "first"：忽略除第一个外的所有形状。
+    * "caused_by"：结果包含第一个形状之内的区域，与第二个形状之外的区域的并集。
+    * "or"：结果包含存在于**任一**形状中的所有区域。
+      * 等价于 CSG 中的并集。
+    * "true"：忽略所有形状，结果是完整盒体形状。
+  * `"shapes"`：必填。包含待组合子形状的 JSON 数组（`[]`）。
+* 作为 JSON 数组（`[]`），包含 6 个数字，顺序为：`[x1, y1, z1, x2, y2, z2]`。
 
-### Helpful image
+### 参考图
 
-![VoxelShape visual guide](./VoxelShapeGuide.png)
+![VoxelShape 视觉指南](./VoxelShapeGuide.png)
 
-## Conditional Shape
+## 条件形状（Conditional Shape）
 
-Conditional shapes consist of a json object (`{}`) containing 2 fields:
+条件形状是一个包含 2 个字段的 JSON 对象（`{}`）：
 
-* `"when"`: A set of conditions to be applied to the block state using the shape.
-* `"shape"`: A single shape to return when the condition is true.
+* `"when"`：一组作用于使用该形状的方块状态的条件。
+* `"shape"`：条件为真时返回的单个形状。
 
-The condition is a json object (`{}`) containing one key per property to match. The value of that property can either be a single string, or a list of strings, corresponding to a set of alternative values for each property.
+条件是一个 JSON 对象（`{}`），其中每个键对应一个要匹配的属性。该属性的值可以是单个字符串，也可以是字符串列表，分别对应每个属性的一个或多个候选值。

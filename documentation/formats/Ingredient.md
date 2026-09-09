@@ -1,10 +1,10 @@
-# Ingredient definitions
+# 原料（Ingredient）定义
 
-Ingredients are not named, but rather used inside other json files.
+原料没有具名形式，而是用在其他 JSON 文件内部。
 
-Due to initialization timing, ingredients used in _Things_ cannot be custom (mod-defined) ingredients. Only `item` and `tag` ingredients are supported.
+由于初始化时机的原因，_Things_ 中使用的原料不能是自定义（模组定义）原料。只支持 `item` 与 `tag` 两种原料。
 
-Item ingredients contain an `"item"` key with a resource location indicating the item registry name.
+物品原料包含 `"item"` 键，值为指示物品注册名的资源位置。
 
 ```json
 {
@@ -12,10 +12,10 @@ Item ingredients contain an `"item"` key with a resource location indicating the
 }
 ```
 
-Tag ingredients contain a `"tag"` key with a resource location indicating the item registry name.
+标签原料包含 `"tag"` 键，值为指示物品标签的资源位置。
 
 ```json
 {
-  "tag": "forge:string"
+  "tag": "minecraft:string"
 }
 ```

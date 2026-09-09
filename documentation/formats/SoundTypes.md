@@ -1,17 +1,17 @@
-# Sound Type Definitions
+# 声音类型（Sound Type）定义
 
-EXPERIMENTAL.
+实验性。
 
-Sound Type definitions let you specify a new set of sounds for a new block material.
+声音类型定义用于为新的方块材质指定一组声音。
 
-Sound Type definitions go in the `sound_type` directory in the thing pack.
+声音类型定义放在 thing 包的 `sound_type` 目录中。
 
-E.g.
+例如：
 ```
-/things/examplepack/sound_event/scream.json
+/things/examplepack/sound_type/scream.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
@@ -26,52 +26,52 @@ E.g.
 
 ## "volume"
 
-Defines how loud the sound is.
+定义声音的响度。
 
-Optional. Default: 1.0.
+可选。默认：1.0。
 
-Must be a number between 0 and 1.
+必须是介于 0 与 1 之间的数字。
 
 ## "pitch"
 
-Defines the pitch of the sound.
+定义声音的音高。
 
-Optional. Default: 1.0.
+可选。默认：1.0。
 
-Must be a number bigger than zero. 1.0 uses the original pitch in the sound file. 
+必须是大于零的数字。1.0 使用声音文件中的原始音高。
 
 ## "break_sound"
 
-Defines which [Sound Event](./SoundEvents.md) to use for when the block breaks.
+定义方块被破坏时使用的 [音效事件](./SoundEvents.md)。
 
-Required.
+必填。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "step_sound"
 
-Defines which [Sound Event](./SoundEvents.md) to use for when something steps on the block.
+定义有东西踩在方块上时使用的 [音效事件](./SoundEvents.md)。
 
-Required.
+必填。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "hit_sound"
 
-Defines which [Sound Event](./SoundEvents.md) to use for when a player or entity hits the block with their hands or a tool.
+定义玩家或实体用手或工具敲击方块时使用的 [音效事件](./SoundEvents.md)。
 
-Required.
+必填。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
 ## "fall_sound"
 
-Defines which [Sound Event](./SoundEvents.md) to use for when something falls on the block.
+定义有东西摔落在方块上时使用的 [音效事件](./SoundEvents.md)。
 
-Required.
+必填。
 
-Must be a resource location string like `"block.anvil.break"`, or `"minecraft:block.amethyst_cluster.break"`. Like on recipe jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"block.anvil.break"`，或 `"minecraft:block.amethyst_cluster.break"`。与配方 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。

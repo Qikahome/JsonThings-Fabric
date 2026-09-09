@@ -1,22 +1,21 @@
-# Block Definitions
+# 流体（Fluid）
 
-Fluid definitions let you define liquids that can be placed in buckets and other fluid containers, and/or placed in the world.
+流体定义允许你定义可以装进桶及其他流体容器、和/或放置在世界中的液体。
 
-Fluid definitions go in the `fluid` directory in the thing pack.
+流体定义放在 thing 包的 `fluid` 目录中。
 
-E.g.
+例如：
 ```
 /things/examplepack/fluid/mud.json
 ```
 
-## Basic structure of the JSON file
+## JSON 文件的基本结构
 
 ```json
 {
   "parent": "another:fluid",
   "type": "plain",
   "fluid_type": "some:fluid_type",
-  "fluid_type": { fluid type definition ... },
   "properties": {
     "facing": "horizontal_facing",
     "powered": { "type": "boolean" },
@@ -33,71 +32,75 @@ E.g.
 }
 ```
 
-# "parent"
+> `"fluid_type"` 除了写成资源位置字符串引用已注册的流体类型外，也可以直接内联一个流体类型定义对象（见 [流体类型](./FluidTypes.md)）。两种情况只能选其一。
 
-Defines another fluid to copy properties from.
+## "parent"
 
-Optional. Default: no parent.
+指定从另一个流体定义继承属性。
 
-Must be a resource location string like `"water"`, or `"minecraft:lava"`. Like on loot table jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+可选。默认：无父级。
+
+必须是资源位置字符串，如 `"water"`，或 `"minecraft:lava"`。与战利品表 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
+
+子级中显式指定的字段会覆盖父级中的同名值。
 
 ## "type"
 
-Defines the fluid factory to use for constructing the fluid. Each factory can have additional properties.
+指定用于构造流体的流体工厂（fluid factory）。每种工厂可以带有额外属性。
 
-Optional. Default: plain type without additional properties.
+可选。默认：不带额外属性的普通（plain）类型。
 
-Must be a resource location string like `"plain"`, or `"minecraft:stairs"`. Like on tag jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+必须是资源位置字符串，如 `"plain"`。与标签 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
-See the available fluid factory types in the [Fluid Factories](./FluidFactories.md) page.
+可用的流体工厂类型见 [流体工厂](./FluidFactories.md) 页面。
 
 ## "fluid_type"
 
-Defines the fluid type, which is a separate object that defines the attributes of the fluid, such as texture, or temperature.
+指定流体类型。流体类型是独立的对象，定义流体的属性（如贴图、温度等）。
 
-Required.
+必填。
 
-Can be either a json object `{}`, or a resource location string like `"plain"`, or `"minecraft:stairs"`. Like on tag jsons and other vanilla files,
-if the namespace (the part before the colon) is missing "minecraft" is implied.
+可以写成 JSON 对象 `{}`（内联定义），也可以是资源位置字符串，如 `"some:fluid_type"`。与标签 JSON 以及其他原版文件一致，
+省略命名空间（冒号前的部分）时默认使用 "minecraft"。
 
-See the available fluid types in the [Fluid Types](./FluidTypes.md) page.
+流体类型的可用字段见 [流体类型](./FluidTypes.md) 页面。
 
 ## "properties"
 
-Defines the fluidstate properties contained in the mod.
+定义流体包含的 FluidState 属性。
 
-Optional. Default: no properties, single state.
+可选。默认：无属性（单一状态）。
 
-Must be a json object (`{}`) containing keys for the property names.
+必须是 JSON 对象 `{}`，键为属性名。
 
-The values in the object can be of 2 types:
-* A String: the name of a stock property provided by vanilla minecraft. New stock properties can be added via mod code.
-* A json object (`{}`) containing some of these keys:
+对象中的值可以是 2 种形式：
+* 字符串：原版提供的库存属性名。新的库存属性可通过模组代码添加。
+* JSON 对象 `{}`，可包含以下键：
     ```json
       {
         "type": "string",
         "values": []
-      } 
+      }
     ```
-  * `"type"`: One of the property implementations available. Required.
-    * `"boolean"`: The values will be `false` and `true`.
-    * `"int"`: The values will be a set of integers. The valid range must be specified in the `min` and `max` keys.
-    * `"string"`: The values will be a set of strings. The valid strings must be specified in the `values` list.
-    * `"direction"`: The values will be cardinal directions. A subset of the directions can be specified in the `values` list.
-    * `"enum"`: The values will be the values in the enum given by the `class` key. A subset of the directions can be specified in the `values` list.
-  * `"values"`: For `string`, `direction` and `enum` properties, a json array (`[]`) containing the strings corresponding to the allowed values. Required for `string` properties only.
-  * `"min"` and `"max"`: For `int` properties, the range of integers available. Required for `int` properties.
-  * `"class"`: For `enum` properties, the fully qualified name of the Enum class. Required for `enum` properties.
+  * `"type"`：属性实现类型之一。必填。
+    * `"boolean"`：值为 `false` 和 `true`。
+    * `"int"`：值为一组整数。合法范围须通过 `min` 与 `max` 键指定。
+    * `"string"`：值为一组字符串。合法字符串须通过 `values` 列表指定。
+    * `"direction"`：值为四个基本方向。可通过 `values` 列表指定方向的子集。
+    * `"enum"`：值为 `class` 键所给枚举中的值。可通过 `values` 列表指定取值的子集。
+  * `"values"`：对 `string`、`direction` 和 `enum` 属性，为包含允许值的 JSON 数组（`[]`）。仅对 `string` 属性为必填。
+  * `"min"` 与 `"max"`：对 `int` 属性，为整数的取值范围。仅对 `int` 属性为必填。
+  * `"class"`：对 `enum` 属性，为枚举类的全限定名。仅对 `enum` 属性为必填。
 
 ## "default_state"
 
-Defines the default value of each property, when the value is not provided explicitly.
+定义各属性在未显式给出值时的默认值。
 
-Optional. Default: the property's first valid value. The default is subject to change unexpectedly and not recommended.
+可选。默认：该属性的第一个合法值。此默认行为可能随时变化，不建议依赖。
 
-Must be a json object (`{}`) containing property names as keys, with valid values for those properties.
+必须是 JSON 对象（`{}`），键为属性名，值为对应属性的合法取值。
 
 ```json
 {
@@ -108,18 +111,12 @@ Must be a json object (`{}`) containing property names as keys, with valid value
 
 ## "bucket"
 
-Defines that the block is see-through and neighbour face culling should not be performed.
+定义流体的桶物品。生成的桶物品会自动命名为 `<流体注册名>_bucket`，例如 `mud` 流体对应的桶物品为 `mud_bucket`。
 
-Optional. Default: false (solid).
+可选。默认：无桶物品。若不使用，流体将没有对应的桶；其他流体容器仍然可用。
 
-Must be a boolean (`false` or `true`).
+可以是 2 种形式之一：
+* 布尔值：若为 `true`，桶物品将使用全部默认属性。
+* JSON 对象（`{}`）：包含物品定义的各字段（见 [物品](./Items.md) 页面）。内联的桶定义中不允许包含 `"fluid"` 字段。
 
-## "item"
-
-Defines the fluids's bucket item.
-
-Optional. Default: no item. If not used, the fluid will have no bucket defined. Other fluid containers will be able to be used still.
-
-Can be one of 2 types:
-* A Boolean: If `true`, the fluid bucket will have all the default properties.
-* A json object (`{}`) containing the definition of an item, as seen in the [Items](./Items.md) page.
+> 注意：`"bucket"` 只是为流体创建桶**物品**。流体方块本身能否放置在世界中，由 `"type"` 选择的工厂（如 `flowing`）及其 `"block"` 参数决定，见 [流体工厂](./FluidFactories.md)。
