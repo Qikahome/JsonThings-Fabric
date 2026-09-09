@@ -159,15 +159,15 @@ publishing {
             from components.java
         }
     }
-    // TODO(发布)：目标仓库未定（Qikahome GitHub Packages 或独立），先注释
-    // repositories {
-    //     maven {
-    //         name = "GitHubPackages"
-    //         url = "https://maven.pkg.github.com/Qikahome/JsonThings"
-    //         credentials {
-    //             username = System.getenv("GITHUB_ACTOR")
-    //             password = System.getenv("GITHUB_TOKEN")
-    //         }
-    //     }
-    // }
+    // 发布：由 .github/workflows/publish.yml 在打 v1.20.1-* tag 时触发（GitHub Packages + Release）
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/Qikahome/JsonThings-Fabric"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
