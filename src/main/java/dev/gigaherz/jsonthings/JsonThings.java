@@ -158,6 +158,20 @@ public class JsonThings implements ModInitializer, ClientModInitializer
                 BlockRenderLayerMap.INSTANCE.putBlock(thing.get().self(), renderTypeByLayer(layer));
             }
         });
+
+        // 流体（含全部 sibling 变体）渲染层：对应上游 Forge JsonThings clientSetup 的 fluidParser 段。
+        // 渲染层按 Fluid 逐个注册，同一 thing 生成的静止/流动等所有条目都需覆盖。
+        fluidParser.getBuilders().forEach(thing -> {
+            if (thing.isInErrorState()) return;
+            ResourceLocation layer = thing.getDefaultRenderLayer();
+            if (!layer.equals(solid))
+            {
+                for (var fluid : thing.getAllSiblings())
+                {
+                    BlockRenderLayerMap.INSTANCE.putFluid(fluid, renderTypeByLayer(layer));
+                }
+            }
+        });
     }
 
     private static void registerBlockColors()
