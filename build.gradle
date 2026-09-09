@@ -90,23 +90,27 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.property('fabric_loader_version')}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.property('fabric_api_version')}"
 
-    // Porting Lib 整包（compile+runtime 依赖；不再 include —— FabricatedForgeFluid 已 jar-in-jar 内嵌 PL，
-    // 避免重复加载同版本 PL 冲突）
+    // Porting Lib 按模块 modImplementation（编译期 classpath）。运行时内嵌分两边：
+    // fluids 由 FabricatedForgeFluid jar-in-jar 提供（同版本，避免重复内嵌），其余
+    // （base=TierSortingRegistry、common=Lazy/NonNullSupplier、models=fluid_container
+    // 桶模型 loader、tool_actions=ToolAction、transfer=FluidBucketWrapper）
+    // 由本模组自行 include。
     def portingLibVersion = project.property('porting_lib_version')
     def portingLibModules = [
-            'accessors', 'asm', 'attributes', 'base', 'blocks', 'brewing', 'chunk_loading',
-            'client_events', 'common', 'config', 'core', 'data', 'entity', 'extensions',
-            'fluids', 'gametest', 'gui_utils', 'items', 'lazy_registration', 'level_events',
-            'loot', 'mixin_extensions', 'model_builders', 'model_generators', 'model_loader',
-            'model_materials', 'models', 'networking', 'obj_loader', 'recipe_book_categories',
-            'registries', 'tags', 'tool_actions', 'transfer', 'utility'
+            'base', 'common', 'fluids', 'models', 'tool_actions', 'transfer'
+    ]
+    def portingLibEmbed = [
+            'base', 'common', 'models', 'tool_actions', 'transfer'
     ]
     portingLibModules.each { mod ->
         modImplementation("io.github.fabricators_of_create.Porting-Lib:${mod}:${portingLibVersion}")
     }
+    portingLibEmbed.each { mod ->
+        modImplementation(include("io.github.fabricators_of_create.Porting-Lib:${mod}:${portingLibVersion}"))
+    }
 
     // FabricatedForgeFluid 流体库（jar-in-jar 内嵌，自带 PL 与流体实体交互/渲染注册）
-    modImplementation(include("qikahome:FabricatedForgeFluid-1.20.1:1.1.0"))
+    modImplementation(include("qikahome:FabricatedForgeFluid-1.20.1:1.1.2"))
 
     compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
