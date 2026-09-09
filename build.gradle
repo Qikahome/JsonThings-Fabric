@@ -167,5 +167,15 @@ publishing {
             from components.java
         }
     }
-    // TODO(发布)：目标仓库未定，先注释（JsonThings-Fabric-1.20.1 同样未启用）
+    // 发布：由 .github/workflows/publish.yml 在打 v1.21.1-* tag 时触发（GitHub Packages + Release）
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/Qikahome/JsonThings-Fabric"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
