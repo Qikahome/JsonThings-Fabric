@@ -14,10 +14,8 @@ import dev.gigaherz.jsonthings.util.parse.value.ObjValue;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,23 +28,18 @@ public class FluidParser extends ThingParser<FluidBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public FluidParser(IEventBus bus)
+    public FluidParser()
     {
         super(GSON, "fluid");
-
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.FLUID, helper -> {
-            LOGGER.info("Started registering Fluid things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing ->
-                            thing.register(helper::register),
-                    BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Fluids.");
-        });
+        LOGGER.info("Started registering Fluid things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(), thing ->
+                        thing.register((name, fluid) -> Registry.register(BuiltInRegistries.FLUID, name, fluid)),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Fluids.");
     }
 
     @Override
@@ -89,7 +82,7 @@ public class FluidParser extends ThingParser<FluidBuilder>
     {
         val
                 .ifString(v -> v.map(ResourceLocation::parse).handle(rl -> {
-                    builder.setAttributesType(DeferredHolder.create(NeoForgeRegistries.Keys.FLUID_TYPES, rl));
+                    builder.setAttributesType(() -> io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids.FLUID_TYPES.get(rl));
                 }))
                 .ifObj(obj -> obj.raw((JsonObject item) -> {
                     createFluidType(builder, item);

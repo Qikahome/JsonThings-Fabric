@@ -3,9 +3,5 @@
     "duration": 20,
     "animation": "drink",
     "on_complete": "use_item"
-  },
-
-  "events": {
-    "use": "testpack:use_finish_message"
   }
 }

@@ -74,7 +74,9 @@ public class FoodBuilder extends BaseBuilder<FoodProperties, FoodBuilder>
         if (alwaysEat) foodBuilder.alwaysEdible();
         if (convertTo != null) foodBuilder.usingConvertsTo(BuiltInRegistries.ITEM.get(ResourceLocation.parse(convertTo)));
         effects.forEach(pair -> {
-            foodBuilder.effect(pair.getFirst()::get, pair.getSecond());
+            // 1.21.1 vanilla FoodProperties.Builder.effect 仅接受实体 MobEffectInstance（上游 Neo 借扩展注入
+            // 的 Supplier 变体在 Fabric 不存在），故直接取值。
+            foodBuilder.effect(pair.getFirst().get(), pair.getSecond());
         });
         return foodBuilder.build();
     }

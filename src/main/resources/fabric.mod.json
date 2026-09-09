@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "jsonthings",
+  "version": "${version}",
+  "name": "Json Things",
+  "description": "Things, in JSON sauce.",
+  "license": "BSD (3 Clause)",
+  "authors": [
+    "gigaherz"
+  ],
+  "contact": {
+    "homepage": "https://github.com/gigaherz/JsonThings",
+    "issues": "https://github.com/gigaherz/JsonThings/issues"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.gigaherz.jsonthings.JsonThings"
+    ],
+    "client": [
+      "dev.gigaherz.jsonthings.JsonThings"
+    ]
+  },
+  "mixins": [
+    "jsonthings.mixins.json"
+  ],
+  "accessWidener": "jsonthings.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}

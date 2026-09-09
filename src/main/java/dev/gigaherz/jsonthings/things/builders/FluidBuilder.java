@@ -10,8 +10,8 @@ import dev.gigaherz.jsonthings.util.Utils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.common.util.Lazy;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

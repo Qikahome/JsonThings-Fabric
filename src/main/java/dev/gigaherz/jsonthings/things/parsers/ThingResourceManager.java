@@ -9,20 +9,18 @@ import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import dev.gigaherz.jsonthings.RunnableQueue;
 import dev.gigaherz.jsonthings.util.CustomPackType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.PackSelectionConfig;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.*;
+import net.minecraft.server.packs.repository.FolderRepositorySource;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
 import java.io.*;
@@ -50,19 +48,15 @@ public class ThingResourceManager
         return InstanceHolder.instance;
     }
 
-    @Deprecated(forRemoval = true)
-    public static ThingResourceManager initialize(IEventBus modBusEvent)
-    {
-        return InstanceHolder.instance;
-    }
-
     private static final Set<String> disabledPacks = Sets.newHashSet();
 
     private RunnableQueue mainThreadExecutor;
 
     private final ReloadableResourceManager resourceManager;
-    private final RepositorySource folderPackFinder;
-    private final PackRepository packList;
+    private final FolderRepositorySource folderPackFinder;
+    // Fabric 无 AddPackFindersEvent：thingpack 源先收集，beginLoading 时再构建 PackRepository。
+    private final List<RepositorySource> packSources = Lists.newArrayList();
+    private PackRepository packList;
 
     private final List<ThingParser<?>> thingParsers = Lists.newArrayList();
     private final Map<String, ThingParser<?>> parsersMap = Maps.newHashMap();
@@ -70,8 +64,12 @@ public class ThingResourceManager
     private ThingResourceManager()
     {
         resourceManager = new ReloadableResourceManager(CustomPackType.THINGS);
-        folderPackFinder = new FolderRepositorySource(getThingPacksLocation(), CustomPackType.THINGS, PackSource.DEFAULT, LevelStorageSource.parseValidator(FMLPaths.GAMEDIR.get().resolve("allowed_symlinks.txt")));
-        packList = new PackRepository(folderPackFinder);
+        // 1.21.1 vanilla FolderRepositorySource 需要 SymlinkValidator 参数；沿用上游 Neo 读取
+        // <gameDir>/allowed_symlinks.txt 的解析方式（Fabric 用游戏目录替代 FMLPaths.GAMEDIR）。
+        var validator = LevelStorageSource.parseValidator(
+                FabricLoader.getInstance().getGameDir().resolve("allowed_symlinks.txt"));
+        folderPackFinder = new FolderRepositorySource(getThingPacksLocation(), CustomPackType.THINGS, PackSource.DEFAULT, validator);
+        packSources.add(folderPackFinder);
     }
 
     public synchronized <TParser extends ThingParser<?>> TParser registerParser(TParser parser)
@@ -84,39 +82,9 @@ public class ThingResourceManager
         return parser;
     }
 
-    @Deprecated(forRemoval = true)
-    public RepositorySource getWrappedPackFinder()
-    {
-        return getWrappedPackFinder(PackType.SERVER_DATA);
-    }
-
-    public RepositorySource getWrappedPackFinder(PackType packType)
-    {
-        return (infoConsumer) -> folderPackFinder.loadPacks(pack -> {
-            if (!disabledPacks.contains(pack.getId()))
-            {
-                var location = new PackLocationInfo(
-                        "thingpack:" + pack.location.id(),
-                        Component.translatable("text.jsonthings.wrappedpack." + packType.getSerializedName() + ".prefix").append(pack.location.title()),
-                        pack.location.source(),
-                        pack.location.knownPackInfo()
-                );
-                var metadata = new Pack.Metadata(
-                        Component.translatable("text.jsonthings.wrappedpack.description"),
-                        pack.metadata.compatibility(),
-                        pack.metadata.requestedFeatures(),
-                        pack.metadata.overlays(),
-                        pack.metadata.isHidden()
-                );
-                var selectionConfig = new PackSelectionConfig(true, Pack.Position.TOP, false);
-                infoConsumer.accept(new Pack(location, pack.resources, metadata, selectionConfig));
-            }
-        });
-    }
-
     public Path getThingPacksLocation()
     {
-        Path thingpacks = FMLPaths.GAMEDIR.get().resolve("thingpacks");
+        Path thingpacks = FabricLoader.getInstance().getGameDir().resolve("thingpacks");
         if (!Files.exists(thingpacks) && !thingpacks.toFile().mkdirs())
             throw new ThingParseException("Could not create thingspacks directory! Please create the directory yourself, or make sure the name is not taken by a file and you have permission to create directories.");
         return thingpacks;
@@ -127,7 +95,7 @@ public class ThingResourceManager
      */
     public synchronized void addPackFinder(RepositorySource finder)
     {
-        packList.addPackFinder(finder);
+        packSources.add(finder);
     }
 
     /**
@@ -142,6 +110,7 @@ public class ThingResourceManager
 
     public CompletableFuture<ThingResourceManager> beginLoading()
     {
+        packList = new PackRepository(packSources.toArray(new RepositorySource[0]));
         packList.reload();
 
         loadConfig();
@@ -175,7 +144,9 @@ public class ThingResourceManager
 
             mainThreadExecutor.runQueue();
 
-            loaderFuture.get().finishLoading();
+            // 仅等待异步资源加载结束；finishLoading 由调用方（JsonThings.onInitialize）显式调用一次，
+            // 避免 builder 二次注册（Fabric RegistrySync 会因同一对象重复注册而报错）。
+            loaderFuture.get();
         }
         catch (InterruptedException e)
         {
@@ -261,6 +232,6 @@ public class ThingResourceManager
 
     private File getConfigFile()
     {
-        return FMLPaths.CONFIGDIR.get().resolve("jsonthings-thingpacks.json").toFile();
+        return FabricLoader.getInstance().getConfigDir().resolve("jsonthings-thingpacks.json").toFile();
     }
 }

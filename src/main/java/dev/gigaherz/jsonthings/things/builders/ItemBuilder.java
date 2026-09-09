@@ -27,8 +27,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import io.github.fabricators_of_create.porting_lib.tool.ItemAbility;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -419,6 +418,16 @@ public class ItemBuilder extends BaseBuilder<Item, ItemBuilder> implements ItemV
     }
 
     @Nullable
+    public ResourceKey<CreativeModeTab> getGroup()
+    {
+        return getValue(group, ItemBuilder::getGroup);
+    }
+
+    public Set<ResourceKey<CreativeModeTab>> getCreativeMenuTabs()
+    {
+        return creativeMenuStacks.keySet();
+    }
+
     public String[] getToolActionsRaw()
     {
         return getValue(toolActions, ItemBuilder::getToolActionsRaw);

@@ -21,8 +21,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import io.github.fabricators_of_create.porting_lib.common.util.Lazy;
+import io.github.fabricators_of_create.porting_lib.registry.DeferredHolder;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 

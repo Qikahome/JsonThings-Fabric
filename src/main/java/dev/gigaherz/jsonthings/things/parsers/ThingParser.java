@@ -21,9 +21,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.ModLoader;
-import net.neoforged.fml.ModLoadingIssue;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -74,7 +72,7 @@ public abstract class ThingParser<TBuilder extends BaseBuilder<?, TBuilder>> ext
 
     static
     {
-        registerCondition(ResourceLocation.parse("mod_loaded"), (type, id, data) -> ModList.get().isLoaded(data.get("modid").getAsString()));
+        registerCondition(ResourceLocation.parse("mod_loaded"), (type, id, data) -> FabricLoader.getInstance().isModLoaded(data.get("modid").getAsString()));
         registerCondition(ResourceLocation.parse("not"), (type, id, data) -> !parseAndTestCondition(type, id, data.get("condition").getAsJsonObject()));
         registerCondition(ResourceLocation.parse("any"), (type, id, data) -> {
             var conditions = data.get("conditions").getAsJsonArray();
@@ -127,7 +125,7 @@ public abstract class ThingParser<TBuilder extends BaseBuilder<?, TBuilder>> ext
         var message = String.format("[Json Things] Error parsing %s with id '%s': %s", thingType, key, e.getMessage());
         LOGGER.error(message);
         LOGGER.trace("Details for message above", e);
-        ModLoader.addLoadingIssue(new ModLoadingIssue(ModLoadingIssue.Severity.WARNING, message, List.of()));
+        // Neo 侧用 ModLoader.addLoadingIssue 展示在加载界面；Fabric 无对应，仅记录日志。
     }
 
     protected static Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

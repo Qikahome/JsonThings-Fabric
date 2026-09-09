@@ -12,7 +12,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.util.Lazy;
+import io.github.fabricators_of_create.porting_lib.common.util.Lazy;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.List;

@@ -2,13 +2,18 @@ package dev.gigaherz.jsonthings.things.builders;
 
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
 import dev.gigaherz.jsonthings.util.Utils;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.fluids.sound.SoundActions;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.common.SoundActions;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
+import qikahome.fabricatedforgefluid.client.FabricatedFluidRenderHandler;
+import qikahome.fabricatedforgefluid.fluids.FabricatedFluidType;
 
 import java.util.function.Consumer;
 
@@ -42,7 +47,7 @@ public class FluidTypeBuilder extends BaseBuilder<FluidType, FluidTypeBuilder>
     private Boolean canHydrate;
     private Boolean canConvertToSource;
     private Boolean supportsBoating;
-
+    private ResourceLocation tag;
 
     private FluidTypeBuilder(ThingParser<FluidTypeBuilder> ownerParser, ResourceLocation registryName)
     {
@@ -308,9 +313,26 @@ public class FluidTypeBuilder extends BaseBuilder<FluidType, FluidTypeBuilder>
         return getValue(supportsBoating, FluidTypeBuilder::getSupportsBoating);
     }
 
+    public void setTag(ResourceLocation tag)
+    {
+        this.tag = tag;
+    }
+
+    /**
+     * 实体交互桥接用的 fluid tag。默认取本 fluid_type 的注册名（{@code <ns>:<path>}），
+     * 数据包需让对应流体实际挂上该 tag（{@code data/<ns>/tags/fluid/<path>.json}），
+     * 否则实体交互（推动/游泳/溺水等）不会命中。
+     */
+    public ResourceLocation getTag()
+    {
+        return getValue(tag, FluidTypeBuilder::getTag);
+    }
+
     @Override
     protected FluidType buildInternal()
     {
+        // Neo 用 net.neoforged.neoforge.fluids.FluidType；Fabric 用 Porting Lib FluidType，
+        // 并由 FabricatedFluidType 携带实体交互桥接 tag（FFF tagToTypeMap）。
         FluidType.Properties props = FluidType.Properties.create();
 
         if (getLightLevel() != null) props.lightLevel(getLightLevel());
@@ -348,38 +370,33 @@ public class FluidTypeBuilder extends BaseBuilder<FluidType, FluidTypeBuilder>
         if (flowingTexture == null)
             throw new IllegalStateException("FluidType requires a flowing_texture value");
 
-        return new FluidType(props)
+        // 实体交互桥接 tag：默认 fluid_type 注册名，可被数据包 "tag" 字段覆盖。
+        ResourceLocation tagId = getTag();
+        if (tagId == null)
+            tagId = getRegistryName();
+        TagKey<Fluid> fluidTag = TagKey.create(Registries.FLUID, tagId);
+
+        // 视觉数据封装在 FluidType 内（FFF 的 FluidRenderHandlerRegistrar 客户端启动时自动遍历注册）。
+        return new ExtendedFluidType(props, fluidTag)
         {
             @Override
-            public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer)
+            public void initializeClient(Consumer<FluidRenderHandler> consumer)
             {
-                consumer.accept(new IClientFluidTypeExtensions()
-                {
-                    @Override
-                    public int getTintColor()
-                    {
-                        return color;
-                    }
-
-                    @Override
-                    public ResourceLocation getStillTexture()
-                    {
-                        return stillTexture;
-                    }
-
-                    @Override
-                    public ResourceLocation getFlowingTexture()
-                    {
-                        return flowingTexture;
-                    }
-
-                    @Override
-                    public @Nullable ResourceLocation getOverlayTexture()
-                    {
-                        return sideTexture;
-                    }
-                });
+                consumer.accept(new FabricatedFluidRenderHandler(stillTexture, flowingTexture, sideTexture, color));
             }
         };
+    }
+
+    public static class ExtendedFluidType extends FabricatedFluidType
+    {
+        public ExtendedFluidType(Properties properties, TagKey<Fluid> tag)
+        {
+            super(properties, tag);
+        }
+
+        @Override
+        public void initializeClient(Consumer<FluidRenderHandler> consumer)
+        {
+        }
     }
 }

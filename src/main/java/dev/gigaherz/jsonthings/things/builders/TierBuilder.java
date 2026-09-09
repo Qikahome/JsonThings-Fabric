@@ -1,15 +1,15 @@
 package dev.gigaherz.jsonthings.things.builders;
 
+import dev.gigaherz.jsonthings.things.misc.FlexTier;
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.SimpleTier;
 
 import java.util.function.Supplier;
 
-public class TierBuilder extends BaseBuilder<SimpleTier, TierBuilder>
+public class TierBuilder extends BaseBuilder<FlexTier, TierBuilder>
 {
     public static TierBuilder begin(ThingParser<TierBuilder> ownerParser, ResourceLocation registryName)
     {
@@ -65,8 +65,10 @@ public class TierBuilder extends BaseBuilder<SimpleTier, TierBuilder>
     }
 
     @Override
-    protected SimpleTier buildInternal()
+    protected FlexTier buildInternal()
     {
-        return new SimpleTier(tag, uses, speed, attackDamageBonus, enchantmentValue, repairIngredient);
+        // Neo SimpleTier 用 net.neoforged.neoforge.common.SimpleTier；Fabric 无对应，用本工程自带的 FlexTier。
+        // 1.21.1 起 vanilla Tier 接口改为 incorrect-for-drops tag（详见 FlexTier javadoc）。
+        return new FlexTier(uses, speed, attackDamageBonus, enchantmentValue, tag, repairIngredient);
     }
 }

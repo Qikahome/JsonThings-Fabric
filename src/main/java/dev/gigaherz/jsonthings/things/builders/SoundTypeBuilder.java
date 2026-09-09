@@ -1,11 +1,11 @@
 package dev.gigaherz.jsonthings.things.builders;
 
 import dev.gigaherz.jsonthings.things.parsers.ThingParser;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.SoundType;
-import net.neoforged.neoforge.common.util.DeferredSoundType;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class SoundTypeBuilder extends BaseBuilder<SoundType, SoundTypeBuilder>
 {
@@ -66,11 +66,19 @@ public class SoundTypeBuilder extends BaseBuilder<SoundType, SoundTypeBuilder>
     @Override
     protected SoundType buildInternal()
     {
-        var breakSoundEvent = DeferredHolder.create(Registries.SOUND_EVENT, breakSound);
-        var stepSoundEvent = DeferredHolder.create(Registries.SOUND_EVENT, stepSound);
-        var placeSoundEvent = DeferredHolder.create(Registries.SOUND_EVENT, placeSound);
-        var hitSoundEvent = DeferredHolder.create(Registries.SOUND_EVENT, hitSound);
-        var fallSoundEvent = DeferredHolder.create(Registries.SOUND_EVENT, fallSound);
-        return new DeferredSoundType(volume, pitch, breakSoundEvent, stepSoundEvent, placeSoundEvent, hitSoundEvent, fallSoundEvent);
+        // Neo 版用 DeferredSoundType(DeferredHolder) 惰性解析；Fabric 的 vanilla SoundType 要求实体 SoundEvent，
+        // 依赖注册顺序（SoundEvent 先于 SoundType 使用）在构建时直接解析。
+        return new SoundType(volume, pitch,
+                resolve(breakSound, SoundEvents.STONE_BREAK),
+                resolve(stepSound, SoundEvents.STONE_STEP),
+                resolve(placeSound != null ? placeSound : breakSound, SoundEvents.STONE_PLACE),
+                resolve(hitSound, SoundEvents.STONE_HIT),
+                resolve(fallSound, SoundEvents.STONE_FALL));
+    }
+
+    private SoundEvent resolve(ResourceLocation id, SoundEvent fallback)
+    {
+        SoundEvent event = BuiltInRegistries.SOUND_EVENT.get(id);
+        return event != null ? event : fallback;
     }
 }

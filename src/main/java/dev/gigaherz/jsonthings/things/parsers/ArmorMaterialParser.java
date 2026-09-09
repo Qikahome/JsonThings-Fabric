@@ -8,8 +8,8 @@ import dev.gigaherz.jsonthings.util.parse.value.Any;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorItem;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,20 +17,18 @@ import java.util.function.Consumer;
 
 public class ArmorMaterialParser extends ThingParser<ArmorMaterialBuilder>
 {
-    public ArmorMaterialParser(IEventBus bus)
+    public ArmorMaterialParser()
     {
         super(GSON, "armor_material");
-
-        bus.addListener(this::register);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.ARMOR_MATERIAL, helper -> {
-            LOGGER.info("Started registering ArmorMaterial things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack ArmorMaterials.");
-        });
+        LOGGER.info("Started registering ArmorMaterial things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> Registry.register(BuiltInRegistries.ARMOR_MATERIAL, thing.getRegistryName(), thing.get()),
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack ArmorMaterials.");
     }
 
     @Override

@@ -13,9 +13,5 @@
 
   "attribute_modifiers": [
     { "slot":"head", "attribute": "generic.armor", "id": "test:test", "amount": 2, "operation": "add_value" }
-  ],
-
-  "events": {
-    "use_on_block": "testpack:test"
-  }
+  ]
 }

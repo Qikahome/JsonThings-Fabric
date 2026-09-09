@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import io.github.fabricators_of_create.porting_lib.registry.DeferredHolder;
 
 import java.util.HashMap;
 import java.util.List;

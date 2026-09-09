@@ -18,7 +18,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
 
 import java.util.Map;
 import java.util.function.Supplier;

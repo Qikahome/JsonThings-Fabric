@@ -13,6 +13,7 @@ import dev.gigaherz.jsonthings.things.items.FlexBucketItem;
 import dev.gigaherz.jsonthings.util.parse.JParse;
 import dev.gigaherz.jsonthings.util.parse.value.StringValue;
 import joptsimple.internal.Strings;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,12 +22,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.UseAnim;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.fluids.capability.wrappers.FluidBucketWrapper;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,39 +35,34 @@ public class ItemParser extends ThingParser<ItemBuilder>
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public ItemParser(IEventBus bus)
+    public ItemParser()
     {
         super(GSON, "item");
-
-        bus.addListener(this::register);
-        bus.addListener(this::registerCapabilities);
-        bus.addListener(this::addToTabs);
     }
 
-    public void register(RegisterEvent event)
+    public void registerValues()
     {
-        event.register(Registries.ITEM, helper -> {
-            LOGGER.info("Started registering Item things, errors about unexpected registry domains are harmless...");
-            processAndConsumeErrors(getThingType(), getBuilders(), thing -> helper.register(thing.getRegistryName(), thing.get()), BaseBuilder::getRegistryName);
-            LOGGER.info("Done processing thingpack Items.");
-        });
+        LOGGER.info("Started registering Item things, errors about unexpected registry domains are harmless...");
+        processAndConsumeErrors(getThingType(), getBuilders(),
+                thing -> {
+                    var item = thing.get();
+                    Registry.register(BuiltInRegistries.ITEM, thing.getRegistryName(), item);
+                    // burn_duration：0/负/缺省 = 不作为燃料（上游经 Neo 注入的 Item#getBurnTime，
+                    // Fabric 侧用 FuelRegistry 注册，0 不可注册故仅在 >0 时添加）。
+                    var burnDuration = thing.getBurnDuration();
+                    if (burnDuration != null && burnDuration > 0)
+                    {
+                        FuelRegistry.INSTANCE.add(item, burnDuration);
+                    }
+                },
+                BaseBuilder::getRegistryName);
+        LOGGER.info("Done processing thingpack Items.");
     }
 
-    public void registerCapabilities(RegisterCapabilitiesEvent event)
-    {
-        processAndConsumeErrors(getThingType(), getBuilders(), thing -> {
-            var item = thing.get();
-            if (item instanceof FlexBucketItem)
-            {
-                event.registerItem(Capabilities.FluidHandler.ITEM, (stack, access) -> new FluidBucketWrapper(stack), item);
-            }
-        }, BaseBuilder::getRegistryName);
-    }
-
-    public void addToTabs(BuildCreativeModeTabContentsEvent event)
-    {
-        processAndConsumeErrors(getThingType(), getBuilders(), thing -> thing.provideVariants(event.getTabKey(), event, event.getParameters(), thing, false), BaseBuilder::getRegistryName);
-    }
+    // 上游 registerCapabilities(RegisterCapabilitiesEvent) 给 FlexBucketItem 挂 Neo FluidBucketWrapper
+    // capability；Fabric 侧等价逻辑由 JsonThings.registerBucketStorages()（Porting Lib FluidStorage）提供。
+    // 上游 addToTabs(BuildCreativeModeTabContentsEvent) 的职责由 CreativeModeTabParser 的
+    // registerValues() 组匹配 / registerItemsToExternalTabs() 承担，此处均不移植。
 
     @Override
     public ItemBuilder processThing(ResourceLocation key, JsonObject data, Consumer<ItemBuilder> builderModification)

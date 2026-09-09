@@ -1,0 +1,13 @@
+accessWidener v2 named
+
+# 对应上游官方 gigaherz accesstransformer.cfg（5 条）：
+# - BlockSetType.register：BlockSetTypeParser 注册 thingpack 自定义类型
+# - MapColor.MATERIAL_COLORS：BlockParser map_color 数字索引
+# - Pack.location/resources/metadata：ThingResourceManager#getWrappedPackFinder(PackType)
+#   复制 thingpack pack 并改写 id/location 时需访问（Neo AT 中这三项仅提升可见性）
+accessible method net/minecraft/world/level/block/state/properties/BlockSetType register (Lnet/minecraft/world/level/block/state/properties/BlockSetType;)Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+accessible method net/minecraft/world/level/block/state/properties/WoodType register (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/world/level/block/state/properties/WoodType;
+accessible field net/minecraft/world/level/material/MapColor MATERIAL_COLORS [Lnet/minecraft/world/level/material/MapColor;
+accessible field net/minecraft/server/packs/repository/Pack location Lnet/minecraft/server/packs/PackLocationInfo;
+accessible field net/minecraft/server/packs/repository/Pack resources Lnet/minecraft/server/packs/ResourcePack;
+accessible field net/minecraft/server/packs/repository/Pack metadata Lnet/minecraft/server/packs/repository/Pack$Metadata;

@@ -23,13 +23,14 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.ItemAbility;
+import io.github.fabricators_of_create.porting_lib.tool.ItemAbility;
+import io.github.fabricators_of_create.porting_lib.tool.addons.ItemAbilityItem;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FlexDiggerItem extends DiggerItem implements IEventRunner
+public class FlexDiggerItem extends DiggerItem implements IEventRunner, ItemAbilityItem
 {
     public FlexDiggerItem(Tier material, TagKey<Block> breakable, Properties properties, ItemBuilder builder)
     {
@@ -193,14 +194,11 @@ public class FlexDiggerItem extends DiggerItem implements IEventRunner
     public boolean canPerformAction(ItemStack stack, ItemAbility toolAction)
     {
         if (toolActions != null) return toolActions.contains(toolAction);
-        return super.canPerformAction(stack, toolAction);
+        return false;
     }
 
-    @Override
-    public int getBurnTime(ItemStack itemStack, @org.jetbrains.annotations.Nullable RecipeType<?> recipeType)
-    {
-        return burnTime;
-    }
+    // 燃烧时长（burn_duration）由 ItemParser.registerValues 经 Fabric FuelRegistry 注册
+        // （上游 Neo 借扩展注入的 Item#getBurnTime 在 vanilla/Fabric 不存在）。
 
     //endregion
 }

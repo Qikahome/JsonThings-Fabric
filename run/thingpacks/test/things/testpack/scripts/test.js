@@ -9,7 +9,7 @@ function apply(eventName, args)
     let player = args.user;
     if (player != null)
     {
-        player.addEffect(effectInstance(effect("regeneration"), 200))
+        player.addEffect(effectInstance("regeneration", 200))
     }
 
     let tag = NBT.compound({
