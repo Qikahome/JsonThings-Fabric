@@ -99,23 +99,26 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.property('fabric_loader_version')}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.property('fabric_api_version')}"
 
-    // Porting Lib 按模块 modImplementation（编译期 classpath；不 include —— FabricatedForgeFluid
-    // 已 jar-in-jar 内嵌 PL，避免重复加载同版本 PL 冲突）
+    // Porting Lib 按模块 modImplementation（编译期 classpath）。运行时内嵌分两边：
+    // fluids 由 FabricatedForgeFluid jar-in-jar 提供（同版本，避免重复内嵌），其余
+    // （common=Lazy、item_abilities=ItemAbility/ItemAbilityItem、models=fluid_container
+    // 桶模型 loader、registry=DeferredHolder）由本模组自行 include。
     def portingLibVersion = project.property('porting_lib_version')
     def portingLibModules = [
-            'attributes', 'base', 'blocks', 'brewing', 'chunk_loading',
-            'client_events', 'client_extensions', 'common', 'config', 'core', 'data',
-            'entity', 'entity_data_serializers', 'fluids', 'gametest', 'gui_utils',
-            'item_abilities', 'items', 'level_events', 'loot', 'milk', 'mixin_extensions',
-            'model_data', 'model_loader', 'models', 'obj_loader', 'recipe_book_categories',
-            'registry', 'render_types', 'resources', 'tags', 'transfer'
+            'common', 'fluids', 'item_abilities', 'models', 'registry'
+    ]
+    def portingLibEmbed = [
+            'common', 'item_abilities', 'models', 'registry'
     ]
     portingLibModules.each { mod ->
         modImplementation("io.github.fabricators_of_create.Porting-Lib:${mod}:${portingLibVersion}")
     }
+    portingLibEmbed.each { mod ->
+        modImplementation(include("io.github.fabricators_of_create.Porting-Lib:${mod}:${portingLibVersion}"))
+    }
 
     // FabricatedForgeFluid 流体库（jar-in-jar 内嵌，自带 PL 与流体实体交互/渲染注册）
-    modImplementation(include("qikahome:FabricatedForgeFluid-1.21.1:1.1.0"))
+    modImplementation(include("qikahome:FabricatedForgeFluid-1.21.1:1.1.2"))
 
     // rhino-lib：上游 NeoForge 依赖的 Rhino 再分发（dev.gigaherz.rhinolib 包）。普通 Java 库，
     // 不绑任何加载器；TODO(发布)：需确认 jar-in-jar 内嵌加载方式（或发布时随 JsonThings 内嵌）。

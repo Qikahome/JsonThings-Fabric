@@ -6,12 +6,16 @@ import dev.gigaherz.jsonthings.things.client.BlockColorHandler;
 import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import dev.gigaherz.jsonthings.things.parsers.*;
 import dev.gigaherz.jsonthings.things.scripting.ScriptParser;
+import qikahome.fabricatedforgefluid.transfer.FluidBucketWrapper;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
@@ -123,6 +127,34 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         itemParser.registerValues();
         // 组匹配依赖 item/block 全部注册完成（explicit=false 遍历 itemParser）。
         creativeModeTabParser.registerValues();
+
+        // 桶暴露为 Fabric transfer 流体容器：对应上游 Neo 的 ItemParser#registerCapabilities
+        // （Capabilities.FluidHandler.ITEM + FluidBucketWrapper）与 1.20.1 Fabric 成品。
+        registerBucketStorages();
+    }
+
+    /**
+     * 把 thingpack 生成的流体桶暴露为 Fabric transfer 流体容器（{@code FluidStorage.ITEM}），
+     * 使管道/泵能读取桶内流体并抽取（整桶换空桶），PL 的 fluid_container 桶模型也能查到桶内流体。
+     * PL 3.x 删除了原 FluidBucketWrapper，等价实现由 FabricatedForgeFluid（FFF）补回，
+     * 即 {@link FluidBucketWrapper}（qikahome.fabricatedforgefluid.transfer）。
+     */
+    private static void registerBucketStorages()
+    {
+        if (fluidParser == null)
+            return;
+        fluidParser.getBuilders().forEach(fb -> {
+            if (fb.isInErrorState())
+                return;
+            var bucketBuilder = fb.getBucketBuilder();
+            if (bucketBuilder == null)
+                return;
+            Item bucket = bucketBuilder.get();
+            Fluid fluid = fb.get().self();
+            if (bucket == null || fluid == null)
+                return;
+            FluidStorage.combinedItemApiProvider(bucket).register(context -> new FluidBucketWrapper(context, fluid, bucket));
+        });
     }
 
     @Override
