@@ -9,5 +9,5 @@ accessible method net/minecraft/world/level/block/state/properties/BlockSetType 
 accessible method net/minecraft/world/level/block/state/properties/WoodType register (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/world/level/block/state/properties/WoodType;
 accessible field net/minecraft/world/level/material/MapColor MATERIAL_COLORS [Lnet/minecraft/world/level/material/MapColor;
 accessible field net/minecraft/server/packs/repository/Pack location Lnet/minecraft/server/packs/PackLocationInfo;
-accessible field net/minecraft/server/packs/repository/Pack resources Lnet/minecraft/server/packs/ResourcePack;
+accessible field net/minecraft/server/packs/repository/Pack resources Lnet/minecraft/server/packs/repository/Pack$ResourcesSupplier;
 accessible field net/minecraft/server/packs/repository/Pack metadata Lnet/minecraft/server/packs/repository/Pack$Metadata;

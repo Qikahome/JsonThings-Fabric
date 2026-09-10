@@ -1,4 +1,9 @@
 {
+  "text.jsonthings.loading_issues.title": "Thingpack Loading Issues",
+  "text.jsonthings.loading_issues.summary": "%s issue(s) were found while loading thingpacks. Some content may be missing; see the log for details.",
+  "text.jsonthings.loading_issues.issue": "[Json Things] Error parsing %1$s with id '%2$s': %3$s",
+  "text.jsonthings.loading_issues.open_mods": "Open Mods Folder",
+  "text.jsonthings.loading_issues.open_log": "Open Log File",
   "text.jsonthings.wrappedpack.client_resources.prefix": "Thingpack: ",
   "text.jsonthings.wrappedpack.server_data.prefix": "Thingpack: ",
   "text.jsonthings.wrappedpack.description": "Cannot be disabled without disabling the thingpack."

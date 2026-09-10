@@ -1,8 +1,8 @@
-name: Publish (tag)
+name: Publish to GitHub Packages
 
 on:
   push:
-    # 仅打 v1.21.1-* tag 时发布（git tag v1.21.1-0.13.7 && git push origin tag）
+    # 仅打 v1.21.1-* tag 时发布（git tag v1.21.1-<mod_version> && git push origin tag）
     tags: ['v1.21.1-*']
   workflow_dispatch:
 
@@ -10,7 +10,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
@@ -27,9 +27,3 @@ jobs:
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            build/libs/JsonThings-1.21.1-fabric-*.jar
-          generate_release_notes: true
