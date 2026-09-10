@@ -1,0 +1,7 @@
+{
+  "text.jsonthings.loading_issues.title": "Thingpack 加载问题",
+  "text.jsonthings.loading_issues.summary": "加载 thingpack 时发现 %s 个问题，部分内容可能缺失；详情见日志。",
+  "text.jsonthings.loading_issues.issue": "解析 %1$s '%2$s' 时出错：%3$s",
+  "text.jsonthings.loading_issues.open_mods": "打开模组文件夹",
+  "text.jsonthings.loading_issues.open_log": "打开日志文件"
+}

@@ -9,6 +9,7 @@ import com.mojang.logging.LogUtils;
 import dev.gigaherz.jsonthings.things.StackContext;
 import dev.gigaherz.jsonthings.things.builders.BaseBuilder;
 import dev.gigaherz.jsonthings.util.KeyNotFoundException;
+import dev.gigaherz.jsonthings.util.LoadingIssues;
 import dev.gigaherz.jsonthings.util.parse.value.Any;
 import dev.gigaherz.jsonthings.util.parse.value.ArrayValue;
 import dev.gigaherz.jsonthings.util.parse.value.ObjValue;
@@ -123,7 +124,11 @@ public abstract class ThingParser<TBuilder extends BaseBuilder<?, TBuilder>> ext
         var message = "Error parsing " + thingType + " with id '" + key + "': " + e.getMessage();
         LOGGER.error(message);
         LOGGER.debug("Details for message above", e);
-        // Forge 用 ModLoadingWarning 收集为 mod 加载错误（非致命），Fabric 无对应机制，此处仅记录并跳过该条目。
+        // Forge 用 ModLoadingWarning 收集为 mod 加载错误（非致命）；Fabric 无对应机制，
+        // 由 LoadingIssues 收集、客户端启动后以自建屏提示（见 LoadingIssuesScreen）。
+        // 屏幕文案走翻译键；上面的日志保持英文原文（第三个参数是异常原因，取自异常、不参与翻译）。
+        LoadingIssues.add(LoadingIssues.Severity.WARNING, "text.jsonthings.loading_issues.issue",
+                thingType, key.toString(), String.valueOf(e.getMessage()));
     }
 
     protected static Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

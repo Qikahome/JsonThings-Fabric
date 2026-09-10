@@ -159,7 +159,8 @@ publishing {
             from components.java
         }
     }
-    // 发布：由 .github/workflows/publish.yml 在打 v1.20.1-* tag 时触发（GitHub Packages + Release）
+    // 发布：publish.yml 在打 v1.20.1-* tag（或手动 dispatch）时推送到 GitHub Packages；
+    // GitHub Release 由 release.yml 手动触发，与发布解耦。
     repositories {
         maven {
             name = "GitHubPackages"

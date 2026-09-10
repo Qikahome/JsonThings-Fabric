@@ -1,19 +1,24 @@
 package dev.gigaherz.jsonthings;
 
 import com.mojang.logging.LogUtils;
+import dev.gigaherz.jsonthings.client.LoadingIssuesScreen;
 import dev.gigaherz.jsonthings.things.ThingRegistries;
 import dev.gigaherz.jsonthings.things.client.BlockColorHandler;
 import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import dev.gigaherz.jsonthings.things.parsers.*;
 import dev.gigaherz.jsonthings.things.scripting.ScriptParser;
+import dev.gigaherz.jsonthings.util.LoadingIssues;
 import io.github.fabricators_of_create.porting_lib.transfer.fluid.item.FluidBucketWrapper;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.renderer.RenderType;
@@ -131,6 +136,23 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         ItemColorHandler.init();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(JsonThings::afterClientStart);
+        // 提示屏必须在标题屏就绪之后再设置（CLIENT_STARTED 与首个 tick 都早于初始屏生效，会被覆盖），
+        // 故在标题屏初始化完成后替换之；玩家确认（关闭提示屏）后不再替换。
+        ScreenEvents.AFTER_INIT.register(JsonThings::replaceTitleScreenWithLoadingIssues);
+    }
+
+    /**
+     * 对应 Forge 侧 {@code ModLoadingWarning} 汇总出的加载错误屏：thingpack 解析期间有问题时，
+     * 用自建提示屏替换标题屏（Fabric Loader 无等价 API，见 {@link LoadingIssues}）。
+     */
+    private static void replaceTitleScreenWithLoadingIssues(Minecraft client, Screen screen, int width, int height)
+    {
+        if (!(screen instanceof TitleScreen) || LoadingIssues.isEmpty() || LoadingIssues.isAcknowledged())
+            return;
+
+        LOGGER.warn("[Json Things] {} thingpack loading issue(s) found; showing the loading issues screen.",
+                LoadingIssues.getIssues().size());
+        client.setScreen(new LoadingIssuesScreen());
     }
 
     private static void afterClientStart(Minecraft client)
