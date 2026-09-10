@@ -1,6 +1,7 @@
 package dev.gigaherz.jsonthings;
 
 import com.mojang.logging.LogUtils;
+import dev.gigaherz.jsonthings.api.ThingPlugin;
 import dev.gigaherz.jsonthings.client.LoadingIssuesScreen;
 import dev.gigaherz.jsonthings.things.ThingRegistries;
 import dev.gigaherz.jsonthings.things.client.BlockColorHandler;
@@ -16,6 +17,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -28,6 +30,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -75,6 +79,13 @@ public class JsonThings implements ModInitializer, ClientModInitializer
     public static SoundEventParser soundEventParser;
     public static SoundTypeParser soundTypeParser;
 
+    /** 声明了 {@code "jsonthings"} 入口点的 mod 扩展，见 {@link ThingPlugin}。 */
+    private static List<LoadedPlugin> thingPlugins = List.of();
+
+    private record LoadedPlugin(String modId, ThingPlugin plugin)
+    {
+    }
+
     @Override
     public void onInitialize()
     {
@@ -104,6 +115,10 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         // mod jar 内嵌 things/（自带 pack.mcmeta 的 mod）注册为 thingpack 源。
         manager.addPackFinder(ModResourcesFinder.buildPackFinder());
 
+        // 扩展点（解析前）：Fabric 各 mod 的 main 入口点是并行调用的，"先注册 parser/thing 类型、
+        // 再解析 thingpack"这个顺序无法保证，故由这里主动回调声明了 "jsonthings" 入口点的 mod。
+        thingPlugins = loadThingPlugins(manager);
+
         // 同步加载并解析 thingpacks（beginLoading → waitForLoading）。
         var loaderFuture = manager.beginLoading();
         manager.waitForLoading(loaderFuture);
@@ -115,6 +130,18 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         // Neo 各 parser 以 RegisterEvent 处理器注册 builders；Fabric 无注册事件，
         // 按依赖顺序显式注册（sound → fluid_type → fluid → block → armor → item → creative_tab）。
         registerThingValues();
+
+        // 扩展点（解析后）：thing 已全部注册进游戏注册表，见 ThingPlugin#afterThingLoading。
+        thingPlugins.forEach(loaded -> {
+            try
+            {
+                loaded.plugin().afterThingLoading(manager);
+            }
+            catch (Throwable e)
+            {
+                LOGGER.error("Error in JsonThings plugin post-load from mod '{}'", loaded.modId(), e);
+            }
+        });
     }
 
     private static void registerThingValues()
@@ -136,6 +163,31 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         // 桶暴露为 Fabric transfer 流体容器：对应上游 Neo 的 ItemParser#registerCapabilities
         // （Capabilities.FluidHandler.ITEM + FluidBucketWrapper）与 1.20.1 Fabric 成品。
         registerBucketStorages();
+    }
+
+    /**
+     * 获取 {@code "jsonthings"} 入口点的扩展实现，并按序回调 {@link ThingPlugin#registerThingTypes}。
+     * 单个插件的失败不应影响其它插件与随后的 thingpack 解析，故逐个捕获。
+     */
+    private static List<LoadedPlugin> loadThingPlugins(ThingResourceManager manager)
+    {
+        var loaded = new ArrayList<LoadedPlugin>();
+        for (var container : FabricLoader.getInstance().getEntrypointContainers(ThingPlugin.ENTRYPOINT_KEY, ThingPlugin.class))
+        {
+            String modId = container.getProvider().getMetadata().getId();
+            try
+            {
+                ThingPlugin plugin = container.getEntrypoint();
+                plugin.registerThingTypes(manager);
+                loaded.add(new LoadedPlugin(modId, plugin));
+            }
+            catch (Throwable e)
+            {
+                LOGGER.error("Error initializing JsonThings plugin from mod '{}'; its thing types and parsers will be unavailable.",
+                        modId, e);
+            }
+        }
+        return loaded;
     }
 
     /**
