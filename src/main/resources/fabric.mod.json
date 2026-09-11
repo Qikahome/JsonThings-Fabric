@@ -18,7 +18,7 @@
       "dev.gigaherz.jsonthings.JsonThings"
     ],
     "client": [
-      "dev.gigaherz.jsonthings.JsonThings"
+      "dev.gigaherz.jsonthings.JsonThingsClient"
     ]
   },
   "mixins": [

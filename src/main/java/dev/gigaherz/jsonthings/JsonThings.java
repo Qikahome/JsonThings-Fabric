@@ -2,48 +2,32 @@ package dev.gigaherz.jsonthings;
 
 import com.mojang.logging.LogUtils;
 import dev.gigaherz.jsonthings.api.ThingPlugin;
-import dev.gigaherz.jsonthings.client.LoadingIssuesScreen;
 import dev.gigaherz.jsonthings.things.ThingRegistries;
-import dev.gigaherz.jsonthings.things.client.BlockColorHandler;
-import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import dev.gigaherz.jsonthings.things.parsers.*;
 import dev.gigaherz.jsonthings.things.scripting.ScriptParser;
-import dev.gigaherz.jsonthings.util.LoadingIssues;
 import io.github.fabricators_of_create.porting_lib.transfer.fluid.item.FluidBucketWrapper;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
- * JsonThings Fabric 入口（main + client 双入口）。
+ * JsonThings Fabric 主入口（对应上游 Forge 版 {@code JsonThings} 的 common 部分）。
  *
- * <p>对应上游 Forge 版 {@code JsonThings} 类。Fabric 无 mod 事件总线，各阶段的映射：
+ * <p>Fabric 无 mod 事件总线，各阶段的映射：
  * <ul>
  *   <li>构造器 + FMLConstructModEvent → {@link #onInitialize()}：创建 parser、注册 things pack 源、同步加载 thingpacks；</li>
  *   <li>NewRegistryEvent(finishLoading) → onInitialize 内按序调用 parser 的 finishLoading/registerValues；</li>
  *   <li>AddPackFindersEvent(SERVER_DATA) → Fabric 无 world datapack 注入通道（数据包内容暂不注入世界）；</li>
- *   <li>ClientHandlers(FMLClientSetupEvent/颜色/渲染层) → {@link #onInitializeClient()} + CLIENT_STARTED。</li>
+ *   <li>ClientHandlers(FMLClientSetupEvent/颜色/渲染层) → {@link JsonThingsClient}（必须分开，
+ *       否则专用服务端加载 main 入口时会因引用客户端类而失败）。</li>
  * </ul>
  */
-public class JsonThings implements ModInitializer, ClientModInitializer
+public class JsonThings implements ModInitializer
 {
     public static final String MODID = "jsonthings";
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -178,119 +162,11 @@ public class JsonThings implements ModInitializer, ClientModInitializer
         });
     }
 
-    @Override
-    public void onInitializeClient()
-    {
-        // 流体渲染 handler 由 FabricatedForgeFluid 的 FluidRenderHandlerRegistrar 自动注册
-        // （遍历流体注册表，对所有 FabricatedFluidType 调用 initializeClient）。
-
-        BlockColorHandler.init();
-        ItemColorHandler.init();
-
-        ClientLifecycleEvents.CLIENT_STARTED.register(JsonThings::afterClientStart);
-        // 提示屏必须在标题屏就绪之后再设置（CLIENT_STARTED 与首个 tick 都早于初始屏生效，会被覆盖），
-        // 故在标题屏初始化完成后替换之；玩家确认（关闭提示屏）后不再替换。
-        ScreenEvents.AFTER_INIT.register(JsonThings::replaceTitleScreenWithLoadingIssues);
-    }
-
-    /**
-     * 对应 Forge 侧 {@code ModLoadingWarning} 汇总出的加载错误屏：thingpack 解析期间有问题时，
-     * 用自建提示屏替换标题屏（Fabric Loader 无等价 API，见 {@link LoadingIssues}）。
-     */
-    private static void replaceTitleScreenWithLoadingIssues(Minecraft client, Screen screen, int width, int height)
-    {
-        if (!(screen instanceof TitleScreen) || LoadingIssues.isEmpty() || LoadingIssues.isAcknowledged())
-            return;
-
-        LOGGER.warn("[Json Things] {} thingpack loading issue(s) found; showing the loading issues screen.",
-                LoadingIssues.getIssues().size());
-        client.setScreen(new LoadingIssuesScreen());
-    }
-
-    private static void afterClientStart(Minecraft client)
-    {
-        try
-        {
-            registerBlockRenderLayers();
-            registerBlockColors();
-            registerItemColors(client.getBlockColors());
-        }
-        catch (Throwable e)
-        {
-            LOGGER.error("Error during JsonThings client setup", e);
-        }
-    }
-
-    private static void registerBlockRenderLayers()
-    {
-        final ResourceLocation solid = new ResourceLocation("solid");
-        blockParser.getBuilders().forEach(thing -> {
-            if (thing.isInErrorState()) return;
-            ResourceLocation layer = thing.getDefaultRenderLayer();
-            if (!layer.equals(solid))
-            {
-                BlockRenderLayerMap.INSTANCE.putBlock(thing.get().self(), renderTypeByLayer(layer));
-            }
-        });
-
-        // 流体（含全部 sibling 变体）渲染层：对应上游 Forge JsonThings clientSetup 的 fluidParser 段。
-        // 渲染层按 Fluid 逐个注册，同一 thing 生成的静止/流动等所有条目都需覆盖。
-        fluidParser.getBuilders().forEach(thing -> {
-            if (thing.isInErrorState()) return;
-            ResourceLocation layer = thing.getDefaultRenderLayer();
-            if (!layer.equals(solid))
-            {
-                for (var fluid : thing.getAllSiblings())
-                {
-                    BlockRenderLayerMap.INSTANCE.putFluid(fluid, renderTypeByLayer(layer));
-                }
-            }
-        });
-    }
-
-    private static void registerBlockColors()
-    {
-        blockParser.getBuilders().forEach(thing -> {
-            String handlerName = thing.getColorHandler();
-            if (handlerName != null)
-            {
-                var bc = BlockColorHandler.get(handlerName);
-                ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> bc.getColor(state, world, pos, tintIndex), thing.get().self());
-            }
-        });
-    }
-
-    private static void registerItemColors(BlockColors blockColors)
-    {
-        itemParser.getBuilders().forEach(thing -> {
-            if (thing.isInErrorState()) return;
-            String handlerName = thing.getColorHandler();
-            if (handlerName != null)
-            {
-                Function<BlockColors, ItemColor> handler = ItemColorHandler.get(handlerName);
-                ItemColor ic = handler.apply(blockColors);
-                ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ic.getColor(stack, tintIndex), thing.get().self());
-            }
-        });
-    }
-
-    private static RenderType renderTypeByLayer(ResourceLocation layer)
-    {
-        return switch (layer.getPath())
-        {
-            case "cutout_mipped" -> RenderType.cutoutMipped();
-            case "cutout" -> RenderType.cutout();
-            case "translucent" -> RenderType.translucent();
-            case "tripwire" -> RenderType.tripwire();
-            default -> RenderType.solid();
-        };
-    }
-
     private static boolean rhinoPresent()
     {
         // 对应 Forge 的 ModList#isLoaded("rhino")：rhino 以独立 mod 安装（其初始化负责安装 ContextFactory/ClassShutter）。
         // Fabric 上优先看 loader（dev/生产 mods 目录均适用），退回类探测兼容仅放 classpath 的情形。
-        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("rhino"))
+        if (FabricLoader.getInstance().isModLoaded("rhino"))
             return true;
         try
         {
