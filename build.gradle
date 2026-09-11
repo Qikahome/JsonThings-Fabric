@@ -110,7 +110,7 @@ dependencies {
     }
 
     // FabricatedForgeFluid 流体库（jar-in-jar 内嵌，自带 PL 与流体实体交互/渲染注册）
-    modImplementation(include("qikahome:FabricatedForgeFluid-1.20.1:1.1.2"))
+    modImplementation(include("qikahome:FabricatedForgeFluid-1.20.1:1.1.3"))
 
     compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
