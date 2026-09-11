@@ -160,6 +160,15 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// 上游部分（dev.gigaherz.jsonthings.*）为 BSD 3-Clause，本体新增部分为 MIT，两者都要求
+// 二进制/源码再分发时随附许可与版权声明。jar-in-jar 时通知必须留在嵌套 jar 内部，故打进 jar。
+tasks.named('jar', Jar) {
+    from('LICENSE.txt') { into 'META-INF' }
+}
+tasks.named('sourcesJar', Jar) {
+    from('LICENSE.txt') { into 'META-INF' }
+}
+
 publishing {
     publications {
         mavenFabric(MavenPublication) {
